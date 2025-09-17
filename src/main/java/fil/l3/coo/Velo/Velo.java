@@ -22,11 +22,9 @@ public abstract class Velo {
         isAvailable = available;
     }
 
-    // Méthodes abstraites à implémenter par les sous-classes
     public abstract double getPrice();
     public abstract String getType();
     
-    @Override
     public String toString() {
         return getType() + "{" +
                 "id='" + id + '\'' +

@@ -4,12 +4,10 @@ public class Station {
 
     private static int idCounter = 0;
     private int id;
-    private String name;
     private int nbPlaces;
 
-    public Station(String name, int nbPlaces) {
+    public Station(int nbPlaces) {
         this.id = idCounter++;
-        this.name = name;
         this.nbPlaces = nbPlaces;
         if (nbPlaces < 10) {
             this.nbPlaces = 10;
@@ -17,11 +15,6 @@ public class Station {
         if (nbPlaces > 20) {
             this.nbPlaces = 20;
         }
-
-    }
-
-    public String getName() {
-        return name;
     }
 
     public int getNbPlaces() {
@@ -53,7 +46,6 @@ public class Station {
     public String toString() {
         return "Station{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
                 ", nbPlaces=" + nbPlaces +
                 '}';
     }

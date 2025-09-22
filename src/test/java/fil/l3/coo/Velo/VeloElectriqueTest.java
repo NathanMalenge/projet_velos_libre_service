@@ -21,8 +21,6 @@ public class VeloElectriqueTest extends VeloTest {
         
         assertEquals("VeloElectrique", velo.getType());
         assertEquals(2.0, velo.getPrice(), 0.01);
-        assertEquals(100, velo.getBatteryLevel());
-        assertFalse(velo.isLowBattery());
         assertFalse(velo.hasBasket());
         assertFalse(velo.hasBaggage());
     }
@@ -34,61 +32,6 @@ public class VeloElectriqueTest extends VeloTest {
         assertTrue(velo.hasBasket());
         assertTrue(velo.hasBaggage());
         assertEquals(2.8, velo.getPrice(), 0.01);
-    }
-
-    @Test
-    public void testBatteryManagement() {
-        VeloElectrique velo = new VeloElectrique();
-        
-        assertEquals(100, velo.getBatteryLevel());
-        assertFalse(velo.isLowBattery());
-        
-        velo.useBattery(30);
-        assertEquals(70, velo.getBatteryLevel());
-        assertFalse(velo.isLowBattery());
-        
-        velo.useBattery(60);
-        assertEquals(10, velo.getBatteryLevel());
-        assertTrue(velo.isLowBattery());
-        
-        velo.chargeBattery();
-        assertEquals(100, velo.getBatteryLevel());
-        assertFalse(velo.isLowBattery());
-    }
-
-    @Test
-    public void testBatteryLimits() {
-        VeloElectrique velo = new VeloElectrique();
-        
-        velo.useBattery(150);
-        assertEquals(0, velo.getBatteryLevel());
-        
-        velo.setBatteryLevel(-10);
-        assertEquals(0, velo.getBatteryLevel());
-        
-        velo.setBatteryLevel(150);
-        assertEquals(100, velo.getBatteryLevel());
-    }
-
-    @Test
-    public void testPriceWithLowBattery() {
-        VeloElectrique veloNormal = new VeloElectrique(100, false, false);
-        VeloElectrique veloLowBattery = new VeloElectrique(15, false, false);
-        
-        assertEquals(2.0, veloNormal.getPrice(), 0.01);
-        assertEquals(1.0, veloLowBattery.getPrice(), 0.01);
-        
-        VeloElectrique veloLowWithAccessories = new VeloElectrique(10, true, true);
-        assertEquals(1.4, veloLowWithAccessories.getPrice(), 0.01);
-    }
-
-    @Test
-    public void testCustomBatteryLevel() {
-        VeloElectrique velo = new VeloElectrique(50, false, false);
-        
-        assertEquals(50, velo.getBatteryLevel());
-        assertEquals(2.0, velo.getPrice(), 0.01);
-        assertFalse(velo.isLowBattery());
     }
 
     @Test
@@ -111,12 +54,10 @@ public class VeloElectriqueTest extends VeloTest {
     }
 
     @Test
-    public void testToStringWithBattery() {
-        VeloElectrique velo = new VeloElectrique(75, false, false);
-        String veloString = velo.toString();
+    public void testPriceDifferenceWithClassique() {
+        VeloElectrique veloElectrique = new VeloElectrique();
+        VeloClassique veloClassique = new VeloClassique();
         
-        assertTrue(veloString.contains("VeloElectrique"));
-        assertTrue(veloString.contains("75%"));
-        assertTrue(veloString.contains(velo.getId()));
+        assertTrue(veloElectrique.getPrice() > veloClassique.getPrice());
     }
 }

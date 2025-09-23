@@ -56,7 +56,6 @@ public class User {
             wallet += amount;
         }
     }
-<<<<<<< HEAD
     /**
      * Deducts money from the user's wallet.
      * The deduction only succeeds if the amount is positive and the user has sufficient funds.
@@ -64,15 +63,9 @@ public class User {
      * @param amount the amount of money to deduct (must be positive)
      * @return true if the deduction was successful, false otherwise
      */
-    public boolean deductMoney(int amount) {
-        if (amount > 0 && wallet >= amount) {
-            wallet -= amount;
-            return true;
-=======
     public void deductMoney(int amount) throws IllegalArgumentException {
         if (amount <= 0) {
             throw new IllegalArgumentException("Le montant doit être positif");
->>>>>>> bf68de4 (class user test effectue)
         }
         if (wallet < amount) {
             throw new IllegalArgumentException("Solde insuffisant");

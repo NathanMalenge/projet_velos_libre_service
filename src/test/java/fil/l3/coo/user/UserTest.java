@@ -44,21 +44,27 @@ public class UserTest {
     @Test
     public void testDeductMoneySuccess() {
         user.addMoney(100);
-        assertTrue(user.deductMoney(50));
+        user.deductMoney(50);
         assertEquals(50, user.getWallet());
     }
     
     @Test
     public void testDeductMoneyFailureInsufficientFunds() {
         user.addMoney(30);
-        assertFalse(user.deductMoney(50));
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.deductMoney(50);
+        });
+        assertEquals("Solde insuffisant", exception.getMessage());
         assertEquals(30, user.getWallet());
     }
     
     @Test
     public void testDeductNegativeMoney() {
         user.addMoney(100);
-        assertFalse(user.deductMoney(-50));
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            user.deductMoney(-50);
+        });
+        assertEquals("Le montant doit être positif", exception.getMessage());
         assertEquals(100, user.getWallet());
     }
     

@@ -7,5 +7,17 @@ Travail du binôme:
 
 -----
 
+## STRUCTURE : 
 
-
+fil.l3.coo                                                      
+├── Main                                                        
+├── user/                                                       
+│   ├── User                                                    
+│   └── InsufficientFundsException                              
+├── Velo/                                                       
+│   ├── Velo (abstract)                                         
+│   ├── VeloClassique                                           
+│   └── VeloElectrique                                          
+└── station/                                                    
+| └── Station  
+└────

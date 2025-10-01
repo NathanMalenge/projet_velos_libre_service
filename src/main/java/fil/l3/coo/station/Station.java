@@ -4,42 +4,20 @@ public class Station {
 
     private static int idCounter = 0;
     private int id;
-    private int nbPlaces;
+    private final int capacity;
+    private int occupiedSpaces;
 
     /**
-     * Creates a new station with the specified number of places.
-     * The number of places is automatically constrained between 10 and 20.
-     * The station is automatically assigned a unique ID.
+     * Creates a new station with the specified capacity.
+     * The capacity is automatically constrained between 10 and 20.
+     * The station starts empty with no bikes parked.
      * 
-     * @param nbPlaces the desired number of places (between 10 and 20)
+     * @param capacity the desired capacity (will be clamped between 10 and 20)
      */
-    public Station(int nbPlaces) {
+    public Station(int capacity) {
         this.id = idCounter++;
-        this.nbPlaces = nbPlaces;
-        if (nbPlaces < 10) {
-            this.nbPlaces = 10;
-        }
-        if (nbPlaces > 20) {
-            this.nbPlaces = 20;
-        }
-    }
-
-    /**
-     * Gets the current number of available places in the station.
-     * 
-     * @return the number of available places
-     */
-    public int getNbPlaces() {
-        return nbPlaces;
-    }
-
-    /**
-     * Sets the number of available places in the station.
-     * 
-     * @param nbPlaces the new number of available places
-     */
-    public void setNbPlaces(int nbPlaces) {
-        this.nbPlaces = nbPlaces;
+        this.capacity = Math.max(10, Math.min(20, capacity));
+        this.occupiedSpaces = 0;
     }
 
     /**
@@ -52,40 +30,107 @@ public class Station {
     }
 
     /**
-     * Occupies one place in the station (when a bike is parked).
-     * If no places are available, this method has no effect.
+     * Gets the total capacity of this station.
+     * 
+     * @return the maximum number of bikes this station can hold
      */
-    public void occupyPlace() {
-        if (nbPlaces > 0) {
-            nbPlaces--;
-        }
+    public int getCapacity() {
+        return capacity;
     }
 
     /**
-     * Frees one place in the station (when a bike is removed).
+     * Gets the number of bikes currently parked in this station.
+     * 
+     * @return the number of occupied spaces
      */
-    public void freePlace() {
-        nbPlaces++;
-    }   
+    public int getOccupiedSpaces() {
+        return occupiedSpaces;
+    }
 
     /**
-     * Checks if there are available places in the station.
+     * Gets the number of available spaces in this station.
      * 
-     * @return true if at least one place is available, false otherwise
+     * @return the number of free spaces for parking bikes
      */
-    public boolean emplacementAvailable() {
-        return nbPlaces > 0;
+    public int getAvailableSpaces() {
+        return capacity - occupiedSpaces;
+    }
+
+    /**
+     * Checks if the station has available spaces for parking a bike.
+     * 
+     * @return true if at least one space is available, false otherwise
+     */
+    public boolean hasAvailableSpace() {
+        return occupiedSpaces < capacity;
+    }
+
+    /**
+     * Checks if the station has bikes available for removal.
+     * 
+     * @return true if at least one bike is parked, false otherwise
+     */
+    public boolean hasBikes() {
+        return occupiedSpaces > 0;
+    }
+
+    /**
+     * Checks if the station is empty (no bikes parked).
+     * 
+     * @return true if no bikes are parked, false otherwise
+     */
+    public boolean isEmpty() {
+        return occupiedSpaces == 0;
+    }
+
+    /**
+     * Checks if the station is full (no available spaces).
+     * 
+     * @return true if the station is at full capacity, false otherwise
+     */
+    public boolean isFull() {
+        return occupiedSpaces == capacity;
+    }
+
+    /**
+     * Parks a bike in this station.
+     * Only succeeds if there is an available space.
+     * 
+     * @return true if the bike was successfully parked, false if station is full
+     */
+    public boolean parkBike() {
+        if (hasAvailableSpace()) {
+            occupiedSpaces++;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes a bike from this station.
+     * Only succeeds if there is at least one bike parked.
+     * 
+     * @return true if a bike was successfully removed, false if station is empty
+     */
+    public boolean removeBike() {
+        if (hasBikes()) {
+            occupiedSpaces--;
+            return true;
+        }
+        return false;
     }
 
     /**
      * Returns a string representation of this station.
      * 
-     * @return a string containing the station's ID and number of places
+     * @return a string containing the station's ID, occupied spaces, and capacity
      */
+    @Override
     public String toString() {
         return "Station{" +
                 "id=" + id +
-                ", nbPlaces=" + nbPlaces +
+                ", occupiedSpaces=" + occupiedSpaces +
+                ", capacity=" + capacity +
                 '}';
     }
 }

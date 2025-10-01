@@ -2,38 +2,23 @@ package fil.l3.coo.user;
 
 public class User {
 
-    private static int nextId = 1;
-    private int id;
-    private String name;
-    private int wallet = 0;
+    private double wallet = 0.0;
 
     /**
-     * Creates a new user with the specified name.
-     * The user is automatically assigned a unique ID and starts with an empty wallet.
-     * 
-     * @param name the name of the user
+     * Creates a new user with an empty wallet.
      */
-    public User(String name) {
-        this.id = nextId++;
-        this.name = name;
+    public User() {
     }
 
     /**
-     * Gets the unique identifier of this user.
+     * Creates a new user with the specified initial wallet amount.
      * 
-     * @return the user's unique ID
+     * @param initialAmount the initial wallet balance (must be positive)
      */
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Gets the name of this user.
-     * 
-     * @return the user's name
-     */
-    public String getName() {
-        return name;
+    public User(double initialAmount) {
+        if (initialAmount > 0) {
+            this.wallet = initialAmount;
+        }
     }
 
     /**
@@ -41,7 +26,7 @@ public class User {
      * 
      * @return the wallet balance
      */
-    public int getWallet() {
+    public double getWallet() {
         return wallet;
     }
 
@@ -51,11 +36,12 @@ public class User {
      * 
      * @param amount the amount of money to add (must be positive)
      */
-    public void addMoney(int amount) {
+    public void addMoney(double amount) {
         if (amount > 0) {
             wallet += amount;
         }
     }
+
     /**
      * Deducts money from the user's wallet.
      * The deduction only succeeds if the amount is positive and the user has sufficient funds.
@@ -63,7 +49,7 @@ public class User {
      * @param amount the amount of money to deduct (must be positive)
      * @throws InsufficientFundsException if the amount is negative or zero, or if there are insufficient funds
      */
-    public void deductMoney(int amount) throws InsufficientFundsException {
+    public void deductMoney(double amount) throws InsufficientFundsException {
         if (amount <= 0) {
             throw new InsufficientFundsException("Le montant doit être positif");
         }
@@ -76,14 +62,21 @@ public class User {
     /**
      * Returns a string representation of this user.
      * 
-     * @return a string containing the user's ID, name, and wallet balance
+     * @return a string containing the wallet balance
      */
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", wallet=" + wallet +
-                '}';
-    }   
+        return "User{wallet=" + wallet + '}';
+    }
 
+    
+//TODO enlever ca    
+    /**
+     * Checks if the user can afford a specific amount.
+     * 
+     * @param amount the amount to check
+     * @return true if the user has sufficient funds, false otherwise
+     */
+    public boolean canAfford(double amount) {
+        return amount >= 0 && wallet >= amount;
+    }
 }

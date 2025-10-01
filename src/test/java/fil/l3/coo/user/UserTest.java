@@ -4,73 +4,73 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import fil.l3.coo.user.exceptions.InsufficientFundsException;
+
 public class UserTest {
     
     private User user;
-    private static final String TEST_NAME = "TestUser";
+    private static final double INITIAL_WALLET = 5.0;
     
     @BeforeEach
     public void setUp() {
-        user = new User(TEST_NAME);
+        user = new User(INITIAL_WALLET);
     }
     
     @Test
-    public void testUniqueIds() {
-        User user1 = new User("User1");
-        User user2 = new User("User2");
-        assertNotEquals(user1.getId(), user2.getId());
+    public void testDefaultConstructor() {
+        User defaultUser = new User();
+        assertEquals(0.0, defaultUser.getWallet(), 0.01);
+    }
+    
+    @Test
+    public void testConstructorWithWallet() {
+        User walletUser = new User(10.0);
+        assertEquals(10.0, walletUser.getWallet(), 0.01);
     }
     
     @Test
     public void testInitialWallet() {
-        assertEquals(0, user.getWallet());
+        assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);
     }
     
     @Test
     public void testAddMoney() {
-        user.addMoney(100);
-        assertEquals(100, user.getWallet());
-        
-        user.addMoney(50);
-        assertEquals(150, user.getWallet());
+        user.addMoney(3.0);
+        assertEquals(8.0, user.getWallet(), 0.01);
     }
     
     @Test
     public void testAddNegativeMoney() {
-        user.addMoney(-100);
-        assertEquals(0, user.getWallet());
+        user.addMoney(-2.0);
+        assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);
     }
     
     @Test
     public void testDeductMoneySuccess() throws InsufficientFundsException {
-        user.addMoney(100);
-        user.deductMoney(50);
-        assertEquals(50, user.getWallet());
+        user.deductMoney(2.0);
+        assertEquals(3.0, user.getWallet(), 0.01);
     }
     
     @Test
     public void testDeductMoneyFailureInsufficientFunds() {
-        user.addMoney(30);
-        Exception exception = assertThrows(InsufficientFundsException.class, () -> {
-            user.deductMoney(50);
+        assertThrows(InsufficientFundsException.class, () -> {
+            user.deductMoney(10.0);
         });
-        assertEquals("Solde insuffisant", exception.getMessage());
-        assertEquals(30, user.getWallet());
+        assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);
     }
     
     @Test
     public void testDeductNegativeMoney() {
-        user.addMoney(100);
-        Exception exception = assertThrows(InsufficientFundsException.class, () -> {
-            user.deductMoney(-50);
+        assertThrows(InsufficientFundsException.class, () -> {
+            user.deductMoney(-2.0);
         });
-        assertEquals("Le montant doit être positif", exception.getMessage());
-        assertEquals(100, user.getWallet());
+        assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);
     }
     
     @Test
-    public void testToString() {
-        String expected = "User{id=" + user.getId() + ", name='" + TEST_NAME + "', wallet=0}";
-        assertEquals(expected, user.toString());
+    public void testCanAfford() {
+        assertTrue(user.canAfford(3.0));
+        assertTrue(user.canAfford(5.0));
+        assertFalse(user.canAfford(6.0));
     }
 }

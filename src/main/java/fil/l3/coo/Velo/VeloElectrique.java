@@ -11,24 +11,14 @@ public class VeloElectrique extends Velo {
     }
 
     /**
-     * Creates a new electric bike with specified accessories.
-     * 
-     * @param hasBasket true if the bike should have a basket
-     * @param hasBaggage true if the bike should have a baggage rack
-     */
-    public VeloElectrique(boolean hasBasket, boolean hasBaggage) {
-        super(hasBasket, hasBaggage);
-    }
-
-    /**
      * Gets the rental price of this electric bike.
-     * Base price is 2.0 (higher than classic bikes), plus additional cost for accessories.
+     * Base price is 2.0 (higher than classic bikes).
      * 
-     * @return the total rental price
+     * @return the rental price
      */
     @Override
     public double getPrice() {
-        return BASE_PRICE + getAccessoriesPrice();
+        return BASE_PRICE;
     }
 
     /**

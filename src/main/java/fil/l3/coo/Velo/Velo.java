@@ -1,44 +1,14 @@
 package fil.l3.coo.Velo;
 
-public abstract class Velo {
-    private static int nextId = 1;
-    private String id;
-    private boolean isAvailable;
-    protected boolean hasBasket;
-    protected boolean hasBaggage;
+public abstract class Velo implements VeloComponent {
+
+    private boolean isAvailable = true;
 
     /**
-     * Creates a new bike without accessories.
-     * The bike is automatically assigned a unique ID and set as available.
+     * Creates a new bike.
+     * The bike is set as available by default.
      */
     public Velo() {
-        this.id = "VELO_" + nextId++;
-        this.isAvailable = true;
-        this.hasBasket = false;
-        this.hasBaggage = false;
-    }
-
-    /**
-     * Creates a new bike with specified accessories.
-     * The bike is automatically assigned a unique ID and set as available.
-     * 
-     * @param hasBasket true if the bike should have a basket
-     * @param hasBaggage true if the bike should have baggage rack
-     */
-    public Velo(boolean hasBasket, boolean hasBaggage) {
-        this.id = "VELO_" + nextId++;
-        this.isAvailable = true;
-        this.hasBasket = hasBasket;
-        this.hasBaggage = hasBaggage;
-    }
-
-    /**
-     * Gets the unique identifier of this bike.
-     * 
-     * @return the bike's unique ID
-     */
-    public String getId() {
-        return id;
     }
 
     /**
@@ -46,6 +16,7 @@ public abstract class Velo {
      * 
      * @return true if the bike is available, false otherwise
      */
+    @Override
     public boolean isAvailable() {
         return isAvailable;
     }
@@ -55,61 +26,20 @@ public abstract class Velo {
      * 
      * @param available true to make the bike available, false to make it unavailable
      */
+    @Override
     public void setAvailable(boolean available) {
         isAvailable = available;
     }
 
     /**
-     * Checks if the bike has a basket.
+     * Gets the description of this bike.
+     * Default implementation returns the type.
      * 
-     * @return true if the bike has a basket, false otherwise
+     * @return the bike description
      */
-    public boolean hasBasket() {
-        return hasBasket;
-    }
-
-    /**
-     * Sets whether the bike has a basket.
-     * 
-     * @param hasBasket true to add a basket, false to remove it
-     */
-    public void setBasket(boolean hasBasket) {
-        this.hasBasket = hasBasket;
-    }
-
-    /**
-     * Checks if the bike has a baggage rack.
-     * 
-     * @return true if the bike has a baggage rack, false otherwise
-     */
-    public boolean hasBaggage() {
-        return hasBaggage;
-    }
-
-    /**
-     * Sets whether the bike has a baggage rack.
-     * 
-     * @param hasBaggage true to add a baggage rack, false to remove it
-     */
-    public void setBaggage(boolean hasBaggage) {
-        this.hasBaggage = hasBaggage;
-    }
-
-    /**
-     * Calculates the additional price for accessories.
-     * Basket adds 0.5 to the price, baggage rack adds 0.3.
-     * 
-     * @return the total price of accessories
-     */
-    protected double getAccessoriesPrice() {
-        double price = 0;
-        if (hasBasket) {
-            price += 0.5;
-        }
-        if (hasBaggage) {
-            price += 0.3;
-        }
-        return price;
+    @Override
+    public String getDescription() {
+        return getType();
     }
 
     /**
@@ -117,6 +47,7 @@ public abstract class Velo {
      * 
      * @return the total price including base price and accessories
      */
+    @Override
     public abstract double getPrice();
     
     /**
@@ -124,12 +55,13 @@ public abstract class Velo {
      * 
      * @return the bike type as a string
      */
+    @Override
     public abstract String getType();
     
+    @Override
     public String toString() {
-        return getType() + "{" +
-                "id='" + id + '\'' +
-                ", isAvailable=" + isAvailable +
+        return getDescription() + "{" +
+                "isAvailable=" + isAvailable +
                 ", price=" + getPrice() +
                 '}';
     }

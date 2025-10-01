@@ -10,25 +10,16 @@ public class VeloClassique extends Velo {
         super();
     }
 
-    /**
-     * Creates a new classic bike with specified accessories.
-     * 
-     * @param hasBasket true if the bike should have a basket
-     * @param hasBaggage true if the bike should have a baggage rack
-     */
-    public VeloClassique(boolean hasBasket, boolean hasBaggage) {
-        super(hasBasket, hasBaggage);
-    }
 
     /**
      * Gets the rental price of this classic bike.
-     * Base price is 1.0, plus additional cost for accessories.
+     * Base price is 1.0.
      * 
-     * @return the total rental price
+     * @return the rental price
      */
     @Override
     public double getPrice() {
-        return BASE_PRICE + getAccessoriesPrice();
+        return BASE_PRICE;
     }
 
     /**

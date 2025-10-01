@@ -42,7 +42,7 @@ public class UserTest {
     }
     
     @Test
-    public void testDeductMoneySuccess() {
+    public void testDeductMoneySuccess() throws InsufficientFundsException {
         user.addMoney(100);
         user.deductMoney(50);
         assertEquals(50, user.getWallet());
@@ -51,7 +51,7 @@ public class UserTest {
     @Test
     public void testDeductMoneyFailureInsufficientFunds() {
         user.addMoney(30);
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(InsufficientFundsException.class, () -> {
             user.deductMoney(50);
         });
         assertEquals("Solde insuffisant", exception.getMessage());
@@ -61,7 +61,7 @@ public class UserTest {
     @Test
     public void testDeductNegativeMoney() {
         user.addMoney(100);
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+        Exception exception = assertThrows(InsufficientFundsException.class, () -> {
             user.deductMoney(-50);
         });
         assertEquals("Le montant doit être positif", exception.getMessage());

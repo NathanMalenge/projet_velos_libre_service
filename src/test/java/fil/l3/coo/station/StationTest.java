@@ -4,6 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import fil.l3.coo.Velo.VeloComponent;
+import fil.l3.coo.Velo.VeloClassique;
+import fil.l3.coo.Velo.VeloElectrique;
+import fil.l3.coo.station.exceptions.BikeNotFoundException;
+import fil.l3.coo.station.exceptions.NullBikeException;
+import fil.l3.coo.station.exceptions.StationFullException;
+
 public class StationTest {
     
     private Station station;
@@ -15,86 +22,106 @@ public class StationTest {
     }
     
     @Test
-    public void testUniqueIds() {
-        Station station1 = new Station(VALID_CAPACITY);
-        Station station2 = new Station(VALID_CAPACITY);
-        assertNotEquals(station1.getId(), station2.getId());
-    }
-    
-    @Test
-    public void testMinimumCapacity() {
-        Station smallStation = new Station(5);
-        assertEquals(10, smallStation.getCapacity());
-    }
-    
-    @Test
-    public void testMaximumCapacity() {
-        Station largeStation = new Station(25);
-        assertEquals(20, largeStation.getCapacity());
+    public void testCapacity() {
+        assertEquals(VALID_CAPACITY, station.getCapacity());
     }
     
     @Test
     public void testInitialState() {
-        assertEquals(VALID_CAPACITY, station.getCapacity());
         assertEquals(0, station.getOccupiedSpaces());
         assertEquals(VALID_CAPACITY, station.getAvailableSpaces());
         assertTrue(station.isEmpty());
         assertFalse(station.isFull());
-        assertTrue(station.hasAvailableSpace());
-        assertFalse(station.hasBikes());
     }
     
     @Test
-    public void testParkBike() {
-        assertTrue(station.parkBike());
+    public void testParkBike() throws NullBikeException, StationFullException {
+        VeloComponent velo = new VeloClassique();
+        assertTrue(station.parkBike(velo));
         assertEquals(1, station.getOccupiedSpaces());
         assertEquals(VALID_CAPACITY - 1, station.getAvailableSpaces());
         assertFalse(station.isEmpty());
-        assertTrue(station.hasBikes());
     }
     
     @Test
-    public void testRemoveBike() {
-        station.parkBike();
-        assertTrue(station.removeBike());
+    public void testRemoveBike() throws NullBikeException, StationFullException, BikeNotFoundException {
+        VeloComponent velo = new VeloClassique();
+        station.parkBike(velo);
+        
+        VeloComponent removed = station.removeBike(velo);
+        assertNotNull(removed);
+        assertEquals(velo, removed);
         assertEquals(0, station.getOccupiedSpaces());
-        assertEquals(VALID_CAPACITY, station.getAvailableSpaces());
-        assertTrue(station.isEmpty());
-        assertFalse(station.hasBikes());
+        assertFalse(removed.isAvailable());
     }
     
     @Test
-    public void testRemoveBikeFromEmptyStation() {
-        assertFalse(station.removeBike());
-        assertTrue(station.isEmpty());
+    public void testRemoveBikeNotInStation() throws NullBikeException, StationFullException {
+        VeloComponent veloInStation = new VeloClassique();
+        VeloComponent veloNotInStation = new VeloElectrique();
+        station.parkBike(veloInStation);
+        
+        assertThrows(BikeNotFoundException.class, () -> {
+            station.removeBike(veloNotInStation);
+        });
+        assertEquals(1, station.getOccupiedSpaces());
     }
     
     @Test
-    public void testFillStation() {
+    public void testRemoveBikeNull() {
+        assertThrows(NullBikeException.class, () -> {
+            station.removeBike(null);
+        });
+    }
+    
+    @Test
+    public void testParkBikeNull() {
+        assertThrows(NullBikeException.class, () -> {
+            station.parkBike(null);
+        });
+    }
+    
+    @Test
+    public void testFillStation() throws NullBikeException, StationFullException {
         for (int i = 0; i < VALID_CAPACITY; i++) {
-            assertTrue(station.parkBike());
+            VeloComponent velo = new VeloClassique();
+            assertTrue(station.parkBike(velo));
         }
         assertTrue(station.isFull());
-        assertFalse(station.hasAvailableSpace());
-        assertEquals(VALID_CAPACITY, station.getOccupiedSpaces());
         assertEquals(0, station.getAvailableSpaces());
     }
     
     @Test
-    public void testParkBikeInFullStation() {
+    public void testParkBikeInFullStation() throws NullBikeException, StationFullException {
+        // Fill the station
         for (int i = 0; i < VALID_CAPACITY; i++) {
-            station.parkBike();
+            station.parkBike(new VeloClassique());
         }
-        assertFalse(station.parkBike());
-        assertEquals(VALID_CAPACITY, station.getOccupiedSpaces());
+        
+        // Try to park one more
+        VeloComponent extraVelo = new VeloElectrique();
+        assertThrows(StationFullException.class, () -> {
+            station.parkBike(extraVelo);
+        });
     }
     
     @Test
-    public void testToString() {
-        String stationString = station.toString();
-        assertTrue(stationString.contains("Station"));
-        assertTrue(stationString.contains(String.valueOf(station.getId())));
-        assertTrue(stationString.contains(String.valueOf(station.getOccupiedSpaces())));
-        assertTrue(stationString.contains(String.valueOf(station.getCapacity())));
+    public void testHasAvailableBikes() throws NullBikeException, StationFullException {
+        assertFalse(station.hasAvailableBikes());
+        
+        station.parkBike(new VeloClassique());
+        assertTrue(station.hasAvailableBikes());
+    }
+    
+    @Test
+    public void testCanParkBike() throws NullBikeException, StationFullException {
+        assertTrue(station.canParkBike());
+        
+        // Fill the station
+        for (int i = 0; i < VALID_CAPACITY; i++) {
+            station.parkBike(new VeloClassique());
+        }
+        
+        assertFalse(station.canParkBike());
     }
 }

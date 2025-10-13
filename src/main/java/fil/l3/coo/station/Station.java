@@ -1,11 +1,16 @@
 package fil.l3.coo.station;
 
+import java.util.ArrayList;
+import java.util.List;
+import fil.l3.coo.Velo.VeloComponent;
+import fil.l3.coo.station.exceptions.BikeNotFoundException;
+import fil.l3.coo.station.exceptions.NullBikeException;
+import fil.l3.coo.station.exceptions.StationFullException;
+
 public class Station {
 
-    private static int idCounter = 0;
-    private int id;
     private final int capacity;
-    private int occupiedSpaces;
+    private List<VeloComponent> parkedBikes;
 
     /**
      * Creates a new station with the specified capacity.
@@ -15,18 +20,8 @@ public class Station {
      * @param capacity the desired capacity (will be clamped between 10 and 20)
      */
     public Station(int capacity) {
-        this.id = idCounter++;
         this.capacity = Math.max(10, Math.min(20, capacity));
-        this.occupiedSpaces = 0;
-    }
-
-    /**
-     * Gets the unique identifier of this station.
-     * 
-     * @return the station's unique ID
-     */
-    public int getId() {
-        return id;
+        this.parkedBikes = new ArrayList<>();
     }
 
     /**
@@ -41,10 +36,10 @@ public class Station {
     /**
      * Gets the number of bikes currently parked in this station.
      * 
-     * @return the number of occupied spaces
+     * @return the number of parked bikes
      */
     public int getOccupiedSpaces() {
-        return occupiedSpaces;
+        return parkedBikes.size();
     }
 
     /**
@@ -53,7 +48,7 @@ public class Station {
      * @return the number of free spaces for parking bikes
      */
     public int getAvailableSpaces() {
-        return capacity - occupiedSpaces;
+        return capacity - parkedBikes.size();
     }
 
     /**
@@ -62,7 +57,7 @@ public class Station {
      * @return true if at least one space is available, false otherwise
      */
     public boolean hasAvailableSpace() {
-        return occupiedSpaces < capacity;
+        return parkedBikes.size() < capacity;
     }
 
     /**
@@ -71,7 +66,7 @@ public class Station {
      * @return true if at least one bike is parked, false otherwise
      */
     public boolean hasBikes() {
-        return occupiedSpaces > 0;
+        return !parkedBikes.isEmpty();
     }
 
     /**
@@ -80,7 +75,7 @@ public class Station {
      * @return true if no bikes are parked, false otherwise
      */
     public boolean isEmpty() {
-        return occupiedSpaces == 0;
+        return parkedBikes.isEmpty();
     }
 
     /**
@@ -89,47 +84,93 @@ public class Station {
      * @return true if the station is at full capacity, false otherwise
      */
     public boolean isFull() {
-        return occupiedSpaces == capacity;
+        return parkedBikes.size() == capacity;
     }
 
     /**
      * Parks a bike in this station.
-     * Only succeeds if there is an available space.
+     * Only succeeds if there is an available space and the bike is not null.
      * 
-     * @return true if the bike was successfully parked, false if station is full
+     * @param velo the bike to park
+     * @return true if the bike was successfully parked
+     * @throws NullBikeException if the bike is null
+     * @throws StationFullException if the station is full
      */
-    public boolean parkBike() {
-        if (hasAvailableSpace()) {
-            occupiedSpaces++;
-            return true;
+    public boolean parkBike(VeloComponent velo) throws NullBikeException, StationFullException {
+        if (velo == null) {
+            throw new NullBikeException();
         }
-        return false;
+        
+        if (!hasAvailableSpace()) {
+            throw new StationFullException("La station est pleine (capacité: " + capacity + ")");
+        }
+        
+        parkedBikes.add(velo);
+        velo.setAvailable(true);
+        return true;
     }
 
     /**
-     * Removes a bike from this station.
-     * Only succeeds if there is at least one bike parked.
+     * Removes a specific bike from this station.
+     * The bike must exist in the station to be removed.
      * 
-     * @return true if a bike was successfully removed, false if station is empty
+     * @param velo the bike to remove
+     * @return the removed bike if it was found and removed
+     * @throws NullBikeException if the bike is null
+     * @throws BikeNotFoundException if the bike doesn't exist in this station
      */
-    public boolean removeBike() {
-        if (hasBikes()) {
-            occupiedSpaces--;
-            return true;
+    public VeloComponent removeBike(VeloComponent velo) throws NullBikeException, BikeNotFoundException {
+        if (velo == null) {
+            throw new NullBikeException();
         }
-        return false;
+        
+        if (!parkedBikes.contains(velo)) {
+            throw new BikeNotFoundException("Ce vélo n'est pas dans cette station");
+        }
+        
+        parkedBikes.remove(velo);
+        velo.setAvailable(false);
+        return velo;
+    }
+
+    /**
+     * Checks if the station has bikes available for removal.
+     * 
+     * @return true if at least one bike is available, false otherwise
+     */
+    public boolean hasAvailableBikes() {
+        return !parkedBikes.isEmpty();
+    }
+
+    /**
+     * Checks if the station can accept a bike for parking.
+     * 
+     * @return true if at least one space is available, false otherwise
+     */
+    public boolean canParkBike() {
+        return hasAvailableSpace();
+    }
+
+
+
+    /**
+     * Gets all parked bikes in this station.
+     * 
+     * @return a copy of the list of parked bikes
+     */
+    public List<VeloComponent> getParkedBikes() {
+        return new ArrayList<>(parkedBikes);
     }
 
     /**
      * Returns a string representation of this station.
      * 
-     * @return a string containing the station's ID, occupied spaces, and capacity
+     * @return a string containing the occupied spaces and capacity
      */
     @Override
     public String toString() {
         return "Station{" +
-                "id=" + id +
-                ", occupiedSpaces=" + occupiedSpaces +
+                "occupiedSpaces=" + parkedBikes.size() +
                 ", capacity=" + capacity +
                 '}';
     }

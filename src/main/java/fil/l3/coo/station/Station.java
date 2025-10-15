@@ -2,7 +2,7 @@ package fil.l3.coo.station;
 
 import java.util.ArrayList;
 import java.util.List;
-import fil.l3.coo.Velo.VeloComponent;
+import fil.l3.coo.vehicule.VehiculeComponent;
 import fil.l3.coo.station.exceptions.BikeNotFoundException;
 import fil.l3.coo.station.exceptions.NullBikeException;
 import fil.l3.coo.station.exceptions.StationFullException;
@@ -10,7 +10,7 @@ import fil.l3.coo.station.exceptions.StationFullException;
 public class Station {
 
     private final int capacity;
-    private List<VeloComponent> parkedBikes;
+    private List<VehiculeComponent> parkedBikes;
 
     /**
      * Creates a new station with the specified capacity.
@@ -22,15 +22,6 @@ public class Station {
     public Station(int capacity) {
         this.capacity = Math.max(10, Math.min(20, capacity));
         this.parkedBikes = new ArrayList<>();
-    }
-
-    /**
-     * Gets the total capacity of this station.
-     * 
-     * @return the maximum number of bikes this station can hold
-     */
-    public int getCapacity() {
-        return capacity;
     }
 
     /**
@@ -58,6 +49,10 @@ public class Station {
      */
     public boolean hasAvailableSpace() {
         return parkedBikes.size() < capacity;
+    }
+
+    public boolean hasAvailableBikes(){
+        return !parkedBikes.isEmpty();
     }
 
     /**
@@ -92,11 +87,10 @@ public class Station {
      * Only succeeds if there is an available space and the bike is not null.
      * 
      * @param velo the bike to park
-     * @return true if the bike was successfully parked
      * @throws NullBikeException if the bike is null
      * @throws StationFullException if the station is full
      */
-    public boolean parkBike(VeloComponent velo) throws NullBikeException, StationFullException {
+    public void parkBike(VehiculeComponent velo) throws NullBikeException, StationFullException {
         if (velo == null) {
             throw new NullBikeException();
         }
@@ -107,7 +101,6 @@ public class Station {
         
         parkedBikes.add(velo);
         velo.setAvailable(true);
-        return true;
     }
 
     /**
@@ -119,7 +112,7 @@ public class Station {
      * @throws NullBikeException if the bike is null
      * @throws BikeNotFoundException if the bike doesn't exist in this station
      */
-    public VeloComponent removeBike(VeloComponent velo) throws NullBikeException, BikeNotFoundException {
+    public VehiculeComponent removeBike(VehiculeComponent velo) throws NullBikeException, BikeNotFoundException { //TODO changer la maniere dont on choisit les velo a rent
         if (velo == null) {
             throw new NullBikeException();
         }
@@ -134,31 +127,11 @@ public class Station {
     }
 
     /**
-     * Checks if the station has bikes available for removal.
-     * 
-     * @return true if at least one bike is available, false otherwise
-     */
-    public boolean hasAvailableBikes() {
-        return !parkedBikes.isEmpty();
-    }
-
-    /**
-     * Checks if the station can accept a bike for parking.
-     * 
-     * @return true if at least one space is available, false otherwise
-     */
-    public boolean canParkBike() {
-        return hasAvailableSpace();
-    }
-
-
-
-    /**
      * Gets all parked bikes in this station.
      * 
      * @return a copy of the list of parked bikes
      */
-    public List<VeloComponent> getParkedBikes() {
+    public List<VehiculeComponent> getParkedBikes() {
         return new ArrayList<>(parkedBikes);
     }
 

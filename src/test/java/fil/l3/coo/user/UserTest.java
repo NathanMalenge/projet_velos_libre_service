@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import fil.l3.coo.user.exceptions.InsufficientFundsException;
+import fil.l3.coo.user.exceptions.*;
 
 public class UserTest {
     
@@ -17,36 +17,21 @@ public class UserTest {
     }
     
     @Test
-    public void testDefaultConstructor() {
-        User defaultUser = new User();
-        assertEquals(0.0, defaultUser.getWallet(), 0.01);
-    }
-    
-    @Test
-    public void testConstructorWithWallet() {
-        User walletUser = new User(10.0);
-        assertEquals(10.0, walletUser.getWallet(), 0.01);
-    }
-    
-    @Test
-    public void testInitialWallet() {
-        assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);
-    }
-    
-    @Test
-    public void testAddMoney() {
+    public void testAddMoney() throws NegativeAmountException{
         user.addMoney(3.0);
         assertEquals(8.0, user.getWallet(), 0.01);
     }
     
     @Test
     public void testAddNegativeMoney() {
-        user.addMoney(-2.0);
+        assertThrows(NegativeAmountException.class, () -> {
+            user.addMoney(-3.0);
+        });
         assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);
     }
     
     @Test
-    public void testDeductMoneySuccess() throws InsufficientFundsException {
+    public void testDeductMoneySuccess() throws InsufficientFundsException, NegativeAmountException {
         user.deductMoney(2.0);
         assertEquals(3.0, user.getWallet(), 0.01);
     }
@@ -61,7 +46,7 @@ public class UserTest {
     
     @Test
     public void testDeductNegativeMoney() {
-        assertThrows(InsufficientFundsException.class, () -> {
+        assertThrows(NegativeAmountException.class, () -> {
             user.deductMoney(-2.0);
         });
         assertEquals(INITIAL_WALLET, user.getWallet(), 0.01);

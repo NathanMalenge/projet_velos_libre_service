@@ -1,4 +1,4 @@
-package fil.l3.coo.Velo;
+package fil.l3.coo.vehicule.velo;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

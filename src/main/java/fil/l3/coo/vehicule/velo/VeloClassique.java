@@ -1,4 +1,4 @@
-package fil.l3.coo.Velo;
+package fil.l3.coo.vehicule.velo;
 
 public class VeloClassique extends Velo {
     private static final double BASE_PRICE = 1.0;

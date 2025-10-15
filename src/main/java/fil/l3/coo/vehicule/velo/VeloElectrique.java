@@ -1,4 +1,4 @@
-package fil.l3.coo.Velo;
+package fil.l3.coo.vehicule.velo;
 
 public class VeloElectrique extends Velo {
     private static final double BASE_PRICE = 2.0;

@@ -1,5 +1,7 @@
 package fil.l3.coo.user;
 
+import fil.l3.coo.user.exceptions.*;
+
 public class User {
 
     private double wallet = 0.0;
@@ -36,9 +38,11 @@ public class User {
      * 
      * @param amount the amount of money to add (must be positive)
      */
-    public void addMoney(double amount) {
+    public void addMoney(double amount) throws NegativeAmountException{
         if (amount > 0) {
             wallet += amount;
+        } else { 
+            throw new NegativeAmountException("Le montant doit être positif");
         }
     }
 
@@ -49,9 +53,9 @@ public class User {
      * @param amount the amount of money to deduct (must be positive)
      * @throws InsufficientFundsException if the amount is negative or zero, or if there are insufficient funds
      */
-    public void deductMoney(double amount) throws InsufficientFundsException {
+    public void deductMoney(double amount) throws InsufficientFundsException, NegativeAmountException {
         if (amount <= 0) {
-            throw new InsufficientFundsException("Le montant doit être positif");
+            throw new NegativeAmountException("Le montant doit être positif");
         }
         if (wallet < amount) {
             throw new InsufficientFundsException("Solde insuffisant");
@@ -68,8 +72,6 @@ public class User {
         return "User{wallet=" + wallet + '}';
     }
 
-    
-//TODO enlever ca    
     /**
      * Checks if the user can afford a specific amount.
      * 

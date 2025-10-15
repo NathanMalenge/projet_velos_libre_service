@@ -1,4 +1,4 @@
-package fil.l3.coo.user;
+package fil.l3.coo.user.exceptions;
 
 /**
  * Exception thrown when a money deduction operation fails.
@@ -14,14 +14,5 @@ public class InsufficientFundsException extends Exception {
     public InsufficientFundsException(String message) {
         super(message);
     }
-    
-    /**
-     * Constructs a new InsufficientFundsException with the specified detail message and cause.
-     * 
-     * @param message the detail message explaining the reason for the exception
-     * @param cause the cause of this exception
-     */
-    public InsufficientFundsException(String message, Throwable cause) {
-        super(message, cause);
-    }
+
 }

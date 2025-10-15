@@ -1,34 +1,20 @@
-package fil.l3.coo.Velo;
+package fil.l3.coo.vehicule.velo;
 
-public abstract class Velo implements VeloComponent {
+import fil.l3.coo.vehicule.Vehicule;
+import fil.l3.coo.vehicule.VehiculeComponent;
 
-    private boolean isAvailable = true;
+/**
+ * Abstract class representing a bike (Velo).
+ * Extends Vehicule and implements VehiculeComponent for the Decorator pattern.
+ */
+public abstract class Velo extends Vehicule implements VehiculeComponent {
 
     /**
      * Creates a new bike.
      * The bike is set as available by default.
      */
     public Velo() {
-    }
-
-    /**
-     * Checks if the bike is currently available for rental.
-     * 
-     * @return true if the bike is available, false otherwise
-     */
-    @Override
-    public boolean isAvailable() {
-        return isAvailable;
-    }
-
-    /**
-     * Sets the availability status of the bike.
-     * 
-     * @param available true to make the bike available, false to make it unavailable
-     */
-    @Override
-    public void setAvailable(boolean available) {
-        isAvailable = available;
+        super();
     }
 
     /**
@@ -61,7 +47,7 @@ public abstract class Velo implements VeloComponent {
     @Override
     public String toString() {
         return getDescription() + "{" +
-                "isAvailable=" + isAvailable +
+                "isAvailable=" + isAvailable() +
                 ", price=" + getPrice() +
                 '}';
     }

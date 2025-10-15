@@ -13,13 +13,26 @@ fil.l3.coo
 ├── Main                                                        
 ├── user/                                                       
 │   ├── User                                                    
-│   └── InsufficientFundsException                              
-├── Velo/                                                       
-│   ├── Velo (abstract)                                         
-│   ├── VeloClassique                                           
-│   └── VeloElectrique                                          
+│   └── exceptions/                                             
+│       ├── InsufficientFundsException                          
+│       └── NegativeAmountException                             
+├── vehicule/                                                   
+│   ├── VehiculeComponent (interface)                           
+│   ├── Vehicule (abstract)                                     
+│   ├── decorator/                                              
+│   │   ├── VehiculeDecorator (abstract)                        
+│   │   ├── BasketDecorator                                     
+│   │   └── BaggageDecorator                                    
+│   └── velo/                                                   
+│       ├── Velo (abstract)                                     
+│       ├── VeloClassique                                       
+│       └── VeloElectrique                                      
 └── station/                                                    
-    └── Station  
+    ├── Station                                                 
+    └── exceptions/                                             
+        ├── BikeNotFoundException                               
+        ├── NullBikeException                                   
+        └── StationFullException  
 
 -----
 
@@ -27,66 +40,94 @@ fil.l3.coo
 
 ```mermaid
 classDiagram
-    %% Exception class
+    %% User Exceptions
     class InsufficientFundsException {
         <<exception>>
         +InsufficientFundsException(String message)
-        +InsufficientFundsException(String message, Throwable cause)
+    }
+    
+    class NegativeAmountException {
+        <<exception>>
+        +NegativeAmountException(String message)
+    }
+    
+    %% Station Exceptions
+    class BikeNotFoundException {
+        <<exception>>
+        +BikeNotFoundException()
+        +BikeNotFoundException(String message)
+    }
+    
+    class NullBikeException {
+        <<exception>>
+        +NullBikeException()
+        +NullBikeException(String message)
+    }
+    
+    class StationFullException {
+        <<exception>>
+        +StationFullException()
+        +StationFullException(String message)
     }
     
     %% User class
     class User {
-        -int nextId$
-        -int id
-        -String name
-        -int wallet
-        +User(String name)
-        +int getId()
-        +String getName()
-        +int getWallet()
-        +void addMoney(int amount)
-        +void deductMoney(int amount)
+        -double wallet
+        +User()
+        +User(double initialAmount)
+        +double getWallet()
+        +void addMoney(double amount)
+        +void deductMoney(double amount)
+        +boolean canAfford(double amount)
         +String toString()
     }
     
     %% Station class
     class Station {
-        -int idCounter$
-        -int id
         -int capacity
-        -int occupiedSpaces
+        -List~VehiculeComponent~ parkedBikes
         +Station(int capacity)
-        +int getId()
-        +int getCapacity()
         +int getOccupiedSpaces()
         +int getAvailableSpaces()
         +boolean hasAvailableSpace()
+        +boolean hasAvailableBikes()
         +boolean hasBikes()
         +boolean isEmpty()
         +boolean isFull()
-        +boolean parkBike()
-        +boolean removeBike()
+        +void parkBike(VehiculeComponent velo)
+        +VehiculeComponent removeBike(VehiculeComponent velo)
+        +List~VehiculeComponent~ getParkedBikes()
+        +String toString()
+    }
+    
+    %% VehiculeComponent interface
+    class VehiculeComponent {
+        <<interface>>
+        +double getPrice()
+        +String getDescription()
+        +boolean isAvailable()
+        +void setAvailable(boolean available)
+        +String getType()
+    }
+    
+    %% Abstract Vehicule class
+    class Vehicule {
+        <<abstract>>
+        -boolean available
+        +Vehicule()
+        +double getPrice()*
+        +String getDescription()*
+        +String getType()*
+        +boolean isAvailable()
+        +void setAvailable(boolean available)
         +String toString()
     }
     
     %% Abstract Velo class
     class Velo {
         <<abstract>>
-        -int nextId$
-        -String id
-        -boolean isAvailable
-        #boolean hasBasket
-        #boolean hasBaggage
         +Velo()
-        +Velo(boolean hasBasket, boolean hasBaggage)
-        +String getId()
-        +boolean isAvailable()
-        +void setAvailable(boolean available)
-        +boolean hasBasket()
-        +void setBasket(boolean hasBasket)
-        +boolean hasBaggage()
-        +void setBaggage(boolean hasBaggage)
-        #double getAccessoriesPrice()
+        +String getDescription()
         +double getPrice()*
         +String getType()*
         +String toString()
@@ -96,7 +137,6 @@ classDiagram
     class VeloClassique {
         -double BASE_PRICE$
         +VeloClassique()
-        +VeloClassique(boolean hasBasket, boolean hasBaggage)
         +double getPrice()
         +String getType()
     }
@@ -105,13 +145,55 @@ classDiagram
     class VeloElectrique {
         -double BASE_PRICE$
         +VeloElectrique()
-        +VeloElectrique(boolean hasBasket, boolean hasBaggage)
         +double getPrice()
         +String getType()
     }
     
-    %% Relationships
-    User ..> InsufficientFundsException : throws
+    %% Abstract Decorator
+    class VehiculeDecorator {
+        <<abstract>>
+        #VehiculeComponent vehicule
+        +VehiculeDecorator(VehiculeComponent vehicule)
+        +boolean isAvailable()
+        +void setAvailable(boolean available)
+        +String getType()
+        +double getPrice()*
+        +String getDescription()*
+    }
+    
+    %% Concrete Decorators
+    class BasketDecorator {
+        -double BASKET_PRICE$
+        +BasketDecorator(VehiculeComponent vehicule)
+        +double getPrice()
+        +String getDescription()
+    }
+    
+    class BaggageDecorator {
+        -double BAGGAGE_PRICE$
+        +BaggageDecorator(VehiculeComponent vehicule)
+        +double getPrice()
+        +String getDescription()
+    }
+    
+    %% Relationships - Héritage (plus fort)
+    Vehicule --|> VehiculeComponent : implements
+    Velo --|> Vehicule : extends
     VeloClassique --|> Velo : extends
     VeloElectrique --|> Velo : extends
+    
+    VehiculeDecorator --|> VehiculeComponent : implements
+    BasketDecorator --|> VehiculeDecorator : extends
+    BaggageDecorator --|> VehiculeDecorator : extends
+    
+    %% Composition/Association
+    VehiculeDecorator --> VehiculeComponent : decorates
+    
+    %% Exceptions
+    User ..> InsufficientFundsException : throws
+    User ..> NegativeAmountException : throws
+    
+    Station ..> BikeNotFoundException : throws
+    Station ..> NullBikeException : throws
+    Station ..> StationFullException : throws
 ```

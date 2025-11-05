@@ -4,8 +4,8 @@ import fil.l3.coo.user.User;
 import fil.l3.coo.user.exceptions.*;
 import fil.l3.coo.vehicule.VehiculeComponent;
 import fil.l3.coo.station.Station;
-import fil.l3.coo.station.exceptions.BikeNotFoundException;
-import fil.l3.coo.station.exceptions.NullBikeException;
+import fil.l3.coo.station.exceptions.VehiculeNotFoundException;
+import fil.l3.coo.station.exceptions.NullVehiculeException;
 import fil.l3.coo.station.exceptions.StationFullException;
 import fil.l3.coo.rental.exceptions.*;
 
@@ -19,6 +19,7 @@ public class RentalSystem {
      * Attempts to rent a specific vehicle from a station for a user.
      * The user must choose the vehicle from the available vehicles in the station.
      * 
+     * @param <T> the type of vehicle
      * @param user the user wanting to rent
      * @param station the station to rent from
      * @param vehicule the specific vehicle to rent
@@ -26,7 +27,7 @@ public class RentalSystem {
      * @throws VehiculeNotAvailableException if the vehicle is not available or null
      * @throws CannotAffordRentalException if the user cannot afford the rental
      */
-    public Location rentVehicule(User user, Station station, VehiculeComponent vehicule) 
+    public <T extends VehiculeComponent> Location rentVehicule(User user, Station<T> station, T vehicule) 
             throws VehiculeNotAvailableException, CannotAffordRentalException {
         
         if (vehicule == null) {
@@ -41,15 +42,17 @@ public class RentalSystem {
         }
         
         try {
-            VehiculeComponent removedVehicule = station.removeBike(vehicule);
+            T removedVehicule = station.removeVehicule(vehicule);
             user.deductMoney(cost);
             return new Location(user, removedVehicule);
-        } catch (NullBikeException | BikeNotFoundException e) {
+        } catch (NullVehiculeException | VehiculeNotFoundException e) {
             throw new VehiculeNotAvailableException("Vehicle not found in station: " + e.getMessage());
         } catch (InsufficientFundsException | NegativeAmountException e) {
             try {
-                station.parkBike(vehicule);
-            } catch (NullBikeException | StationFullException ex) {}
+                station.parkVehicule(vehicule);
+            } catch (NullVehiculeException | StationFullException ex) {
+                // Ignore - vehicle wasn't removed anyway
+            }
             throw new CannotAffordRentalException("Failed to deduct rental cost: " + e.getMessage());
         }
     }
@@ -57,17 +60,19 @@ public class RentalSystem {
     /**
      * Returns a vehicle to a station.
      * 
+     * @param <T> the type of vehicle
      * @param location the rental to end
      * @param toStation the station to return the vehicle to
      * @return true if successful, false otherwise
      */
-    public boolean returnVehicule(Location location, Station toStation) {
-        VehiculeComponent vehicule = location.getVehicule();
+    public <T extends VehiculeComponent> boolean returnVehicule(Location location, Station<T> toStation) {
+        @SuppressWarnings("unchecked")
+        T vehicule = (T) location.getVehicule();
         
         try {
-            toStation.parkBike(vehicule);
+            toStation.parkVehicule(vehicule);
             return true;
-        } catch (NullBikeException | StationFullException e) {
+        } catch (NullVehiculeException | StationFullException e) {
             return false;
         }
     }

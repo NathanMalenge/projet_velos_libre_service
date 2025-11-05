@@ -10,7 +10,7 @@ import fil.l3.coo.vehicule.velo.VeloClassique;
 import fil.l3.coo.vehicule.velo.VeloElectrique;
 import fil.l3.coo.vehicule.decorator.BasketDecorator;
 import fil.l3.coo.station.Station;
-import fil.l3.coo.station.exceptions.NullBikeException;
+import fil.l3.coo.station.exceptions.NullVehiculeException;
 import fil.l3.coo.station.exceptions.StationFullException;
 import fil.l3.coo.rental.exceptions.*;
 
@@ -18,24 +18,24 @@ public class RentalSystemTest {
     
     private RentalSystem rentalSystem;
     private User user;
-    private Station station;
+    private Station<VehiculeComponent> station;
     private VehiculeComponent velo1;
     private VehiculeComponent velo2;
     private VehiculeComponent velo3;
     
     @BeforeEach
-    public void setUp() throws NullBikeException, StationFullException {
+    public void setUp() throws NullVehiculeException, StationFullException {
         rentalSystem = new RentalSystem();
         user = new User(10.0); 
-        station = new Station(15);
+        station = new Station<>(15);
         
         velo1 = new VeloClassique(); 
         velo2 = new VeloElectrique();
         velo3 = new BasketDecorator(new VeloClassique()); 
         
-        station.parkBike(velo1);
-        station.parkBike(velo2);
-        station.parkBike(velo3);
+        station.parkVehicule(velo1);
+        station.parkVehicule(velo2);
+        station.parkVehicule(velo3);
     }
     
     @Test
@@ -89,7 +89,7 @@ public class RentalSystemTest {
         Location rental = rentalSystem.rentVehicule(user, station, velo1);
         assertNotNull(rental);
         
-        Station returnStation = new Station(10);
+        Station<VehiculeComponent> returnStation = new Station<>(10);
         boolean success = rentalSystem.returnVehicule(rental, returnStation);
         
         assertTrue(success);

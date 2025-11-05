@@ -102,8 +102,8 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 
 **Package `station.exceptions` :**
 - `StationFullException` : Levée quand on tente de garer un vélo dans une station pleine
-- `BikeNotFoundException` : Levée quand on cherche un vélo absent de la station
-- `NullBikeException` : Levée lors d'opérations sur un vélo null
+- `VehiculeNotFoundException` : Levée quand on cherche un véhicule absent de la station
+- `NullVehiculeException` : Levée lors d'opérations sur un véhicule null
 
 **Avantages :**
 - Séparation des erreurs métier et techniques
@@ -213,8 +213,8 @@ fil.l3.coo
 ├── station/                                                    
 │   ├── Station                                                 
 │   └── exceptions/                                             
-│       ├── BikeNotFoundException                               
-│       ├── NullBikeException                                   
+│       ├── VehiculeNotFoundException                           
+│       ├── NullVehiculeException                               
 │       └── StationFullException                                
 └── rental/                                                     
     ├── RentalSystem                                            
@@ -368,16 +368,16 @@ classDiagram
         +NegativeAmountException(String message)
     }
     
-    class BikeNotFoundException {
+    class VehiculeNotFoundException {
         <<exception>>
-        +BikeNotFoundException()
-        +BikeNotFoundException(String message)
+        +VehiculeNotFoundException()
+        +VehiculeNotFoundException(String message)
     }
     
-    class NullBikeException {
+    class NullVehiculeException {
         <<exception>>
-        +NullBikeException()
-        +NullBikeException(String message)
+        +NullVehiculeException()
+        +NullVehiculeException(String message)
     }
     
     class StationFullException {
@@ -386,22 +386,18 @@ classDiagram
         +StationFullException(String message)
     }
     
-    %% Relations d'héritage - Véhicules
     Vehicule --|> VehiculeComponent : implements
     Velo --|> Vehicule : extends
     VeloClassique --|> Velo : extends
     VeloElectrique --|> Velo : extends
     
-    %% Relations d'héritage - Decorators
     VehiculeDecorator --|> VehiculeComponent : implements
     BasketDecorator --|> VehiculeDecorator : extends
     BaggageDecorator --|> VehiculeDecorator : extends
     
-    %% Relations d'héritage - Exceptions
     CannotAffordRentalException --|> RentalException : extends
     VehiculeNotAvailableException --|> RentalException : extends
     
-    %% Compositions importantes
     VehiculeDecorator --> VehiculeComponent : wraps
     Location --> User : user
     Location --> VehiculeComponent : vehicule

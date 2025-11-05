@@ -386,38 +386,26 @@ classDiagram
         +StationFullException(String message)
     }
     
-
-    RentalSystem --> Location : creates
-    RentalSystem ..> User : uses
-    RentalSystem ..> Station : uses
-    RentalSystem ..> VehiculeComponent : uses
-    
-    Location --> User : has
-    Location --> VehiculeComponent : has
-
-    Station --> VehiculeComponent : stores 
+    %% Relations d'héritage - Véhicules
     Vehicule --|> VehiculeComponent : implements
     Velo --|> Vehicule : extends
     VeloClassique --|> Velo : extends
     VeloElectrique --|> Velo : extends
     
+    %% Relations d'héritage - Decorators
     VehiculeDecorator --|> VehiculeComponent : implements
-    VehiculeDecorator --> VehiculeComponent : decorates
     BasketDecorator --|> VehiculeDecorator : extends
     BaggageDecorator --|> VehiculeDecorator : extends
     
+    %% Relations d'héritage - Exceptions
     CannotAffordRentalException --|> RentalException : extends
     VehiculeNotAvailableException --|> RentalException : extends
     
-    RentalSystem ..> CannotAffordRentalException : throws
-    RentalSystem ..> VehiculeNotAvailableException : throws
-    
-    User ..> InsufficientFundsException : throws
-    User ..> NegativeAmountException : throws
-    
-    Station ..> BikeNotFoundException : throws
-    Station ..> NullBikeException : throws
-    Station ..> StationFullException : throws
+    %% Compositions importantes
+    VehiculeDecorator --> VehiculeComponent : wraps
+    Location --> User : user
+    Location --> VehiculeComponent : vehicule
+    Station --> VehiculeComponent : parkedBikes
 ```
 
 ---

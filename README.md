@@ -3,10 +3,19 @@
 Travail du binôme:
 
 - Nathan Malengé
-- Théo Debeer 
+- Théo Debeer
 
-**Introduction :**  
+**Introduction :**
 Ce projet implémente un système de gestion de location de véhicules urbains. Il permet de gérer des utilisateurs avec des portefeuilles, des stations de véhicules avec capacité limitée, différents types de véhicules auxquels on peut ajouter des accessoires via le pattern Decorator, et un système complet de location coordonnant l'ensemble. Le projet illustre l'application de principes de conception orientée objet avancés.
+
+
+### Ce qu'il nous manque
+
+- simulation temporelle
+- Redistrib
+- maintenance reparateur
+- voleur
+- pattern visitor
 
 ---
 
@@ -55,27 +64,30 @@ java -jar target/projet-coo-1.0-SNAPSHOT.jar
 
 ---
 
-## Éléments de code important 
+## Éléments de code important
 
 ### 1. Pattern Decorator pour les accessoires
 
 **Principe :** Le pattern Decorator permet d'ajouter dynamiquement des fonctionnalités à un objet sans modifier sa structure.
 
 **Mise en œuvre :**
+
 - `VehiculeComponent` : Interface définissant les composants des véhicules (getPrice, getDescription, isAvailable)
 - `VehiculeDecorator` : Classe abstraite implémentant `VehiculeComponent` et contenant une référence vers un autre `VehiculeComponent`
 - `BasketDecorator` et `BaggageDecorator` : Décorateurs ajoutant respectivement un panier (+0.5€) et un porte-bagages (+0.3€)
 
 **Avantages :**
+
 - Composition flexible : on peut combiner plusieurs accessoires
 - Extension facile : ajouter un nouvel accessoire ne nécessite qu'une nouvelle classe de décorateur
 - Respect du principe Open/Closed (ouvert à l'extension, fermé à la modification)
 
 **Exemple d'utilisation :**
+
 ```java
-VehiculeComponent velo = new VeloClassique();                    
-velo = new BasketDecorator(velo);                               
-velo = new BaggageDecorator(velo);                              
+VehiculeComponent velo = new VeloClassique();                  
+velo = new BasketDecorator(velo);                             
+velo = new BaggageDecorator(velo);                            
 System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 // Affiche : "VeloClassique + Basket + Baggage : 1.8€"
 ```
@@ -83,12 +95,14 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 ### 2. Hiérarchie des véhicules
 
 **Structure :**
+
 - `VehiculeComponent` (interface) : Composants de base pour tous les véhicules
 - `Vehicule` (classe abstraite) : Implémente les fonctionnalités communes (disponibilité)
 - `Velo` (classe abstraite) : Spécialisation pour les vélos
 - `VeloClassique` et `VeloElectrique` : Implémentations concrètes avec prix différents
 
 **Principe appliqué :** Polymorphisme et abstraction
+
 - Les stations manipulent des `VehiculeComponent` sans connaître le type concret
 - Extensibilité : ajout facile de nouveaux types de véhicules (trottinettes, scooters...)
 
@@ -97,15 +111,18 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 **Exceptions métier personnalisées :**
 
 **Package `user.exceptions` :**
+
 - `InsufficientFundsException` : Levée quand l'utilisateur n'a pas assez d'argent
 - `NegativeAmountException` : Levée lors d'une tentative avec un montant négatif
 
 **Package `station.exceptions` :**
+
 - `StationFullException` : Levée quand on tente de garer un vélo dans une station pleine
 - `VehiculeNotFoundException` : Levée quand on cherche un véhicule absent de la station
 - `NullVehiculeException` : Levée lors d'opérations sur un véhicule null
 
 **Avantages :**
+
 - Séparation des erreurs métier et techniques
 - Messages d'erreur explicites et localisés
 - Meilleure gestion du flux d'exécution que des retours booléens
@@ -113,11 +130,13 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 ### 4. Conception de la classe Station
 
 **Caractéristiques :**
+
 - Utilise une `List<VehiculeComponent>` pour stocker les vélos
 - Capacité contrainte entre 10 et 20 places (validation dans le constructeur)
 - API claire avec méthodes de vérification : `isEmpty()`, `isFull()`, `hasAvailableSpace()`
 
 **Points intéressants :**
+
 - Les méthodes `parkBike()` et `removeBike()` lancent des exceptions explicites
 - Encapsulation : `getParkedBikes()` retourne une copie de la liste (protection contre les modifications externes)
 - Compatible avec le pattern Decorator : manipule l'interface `VehiculeComponent`
@@ -125,11 +144,13 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 ### 5. Classe User simplifiée mais complète
 
 **Design :**
+
 - Portefeuille en `double` pour gérer les centimes d'euro
 - Pas d'identifiants ou de noms : focus sur la fonctionnalité métier
 - Méthode `canAfford()` pour vérifier la solvabilité sans exception
 
 **Principe appliqué :** Responsabilité unique (Single Responsibility Principle)
+
 - `User` gère uniquement le portefeuille
 - La logique de location est déléguée à `RentalSystem`
 
@@ -138,6 +159,7 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
 **Principe :** Le `RentalSystem` coordonne les interactions entre utilisateurs, stations et véhicules pour gérer les locations.
 
 **Mise en œuvre :**
+
 - `Location` : Représente une transaction de location (utilisateur + véhicule loué)
 - `RentalSystem` : Gère la logique métier de location et de retour
 - **Exceptions métier dédiées** :
@@ -146,6 +168,7 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
   - `VehiculeNotAvailableException` : Le véhicule n'est pas disponible
 
 **Fonctionnalités :**
+
 - `rentVehicule()` : Loue un véhicule depuis une station
   - Vérifie la solvabilité de l'utilisateur
   - Retire le véhicule de la station
@@ -155,16 +178,18 @@ System.out.println(velo.getDescription() + " : " + velo.getPrice() + "€");
   - Gère les cas où la station est pleine
 
 **Avantages :**
+
 - Séparation des responsabilités : la logique de location est isolée
-- Gestion des erreurs avec exceptions 
+- Gestion des erreurs avec exceptions
 
 **Exemple d'utilisation :**
+
 ```java
 RentalSystem system = new RentalSystem();
 User user = new User(10.0);
 Station station = new Station(15);
 VehiculeComponent velo = new VeloClassique();
-station.parkBike(velo);
+station.parkVehicule(velo);
 
 try {
     Location location = system.rentVehicule(user, station, velo);
@@ -175,56 +200,144 @@ try {
 }
 ```
 
-### 7. Tests unitaires complets
+### 7. Centre de Contrôle et Pattern Observer
+
+**Principe :** Le Centre de Contrôle supervise l'ensemble de la flotte de véhicules et des stations. Il utilise le **Pattern Observer** pour être notifié automatiquement à chaque dépôt ou retrait de véhicule.
+
+**Mise en œuvre :**
+
+- `StationObserver` : Interface définissant les méthodes de notification (`onVehicleParked`, `onVehicleRemoved`)
+- `Station<T>` : Station générique qui maintient une liste d'observateurs et les notifie à chaque opération
+- `ControlCenter` : Implémente `StationObserver` pour surveiller toutes les stations enregistrées
+
+**Fonctionnalités du ControlCenter :**
+
+- Enregistrement/désenregistrement de stations
+- Réception de notifications en temps réel pour chaque dépôt/retrait
+- Historique des événements par station
+- Statistiques de la flotte (total véhicules, capacité totale)
+- Affichage du résumé de la flotte
+
+**Avantages :**
+
+- Couplage faible entre les stations et le centre de contrôle
+- Extensible : d'autres observateurs peuvent facilement être ajoutés
+- Conforme aux exigences du sujet (notification à chaque opération)
+- Prépare le terrain pour la redistribution automatique des véhicules
+
+**Exemple d'utilisation :**
+
+```java
+ControlCenter controlCenter = new ControlCenter();
+Station<VehiculeComponent> station = new Station<>(15);
+controlCenter.registerStation(station);
+
+// Les opérations sur la station notifient automatiquement le centre
+station.parkVehicule(velo); // → Notification envoyée au ControlCenter
+controlCenter.printFleetSummary(); // Affiche les statistiques de la flotte
+```
+
+### 8. Station Générique avec Identifiants Uniques
+
+**Principe :** Les stations sont maintenant génériques (`Station<T extends VehiculeComponent>`) pour assurer la type-safety et possèdent des identifiants uniques comme requis par le sujet.
+
+**Caractéristiques :**
+
+- Type générique `T` permettant de créer des stations spécialisées par type de véhicule
+- ID unique auto-généré pour chaque station
+- Support du Pattern Observer intégré
+- Méthodes renommées pour être génériques (`parkVehicule`, `removeVehicule`, `getParkedVehicules`)
+
+**Avantages :**
+
+- Type-safety : empêche le mélange de différents types de véhicules dans une même station
+- Identifiants uniques facilitent le suivi et la gestion de la flotte
+- Extensible pour d'autres types de véhicules (trottinettes, scooters, etc.)
+
+### 9. Tests unitaires complets
 
 **Organisation :**
-- Tests pour chaque classe principale : `UserTest`, `StationTest`, `VehiculeTest`, `RentalSystemTest`
+
+- Tests pour chaque classe principale : `UserTest`, `StationTest`, `VehiculeTest`, `RentalSystemTest`, `ControlCenterTest`
 - Utilisation de JUnit 5 avec `@BeforeEach` pour l'initialisation
 - Tests des cas nominaux et des cas d'erreur (exceptions)
 
 **Couverture :**
+
 - Tests des limites (capacité min/max des stations)
 - Tests des comportements exceptionnels (montants négatifs, stations pleines)
 - Tests du pattern Decorator (combinaisons d'accessoires)
 - Tests du système de location (scénarios de location et retour)
+- Tests du Pattern Observer (notifications du ControlCenter)
+- Tests de l'unicité des IDs de stations
+- **36 tests au total, tous passent avec succès**
 
 ---
 
-## STRUCTURE : 
+## STRUCTURE :
 
-fil.l3.coo                                                      
-├── Main                                                        
-├── user/                                                       
-│   ├── User                                                    
-│   └── exceptions/                                             
-│       ├── InsufficientFundsException                          
-│       └── NegativeAmountException                             
-├── vehicule/                                                   
-│   ├── VehiculeComponent (interface)                           
-│   ├── Vehicule (abstract)                                     
-│   ├── decorator/                                              
-│   │   ├── VehiculeDecorator (abstract)                        
-│   │   ├── BasketDecorator                                     
-│   │   └── BaggageDecorator                                    
-│   └── velo/                                                   
-│       ├── Velo (abstract)                                     
-│       ├── VeloClassique                                       
-│       └── VeloElectrique                                      
-├── station/                                                    
-│   ├── Station                                                 
-│   └── exceptions/                                             
-│       ├── VehiculeNotFoundException                           
-│       ├── NullVehiculeException                               
-│       └── StationFullException                                
-└── rental/                                                     
-    ├── RentalSystem                                            
-    ├── Location                                                
-    └── exceptions/                                             
-        ├── RentalException                                     
-        ├── CannotAffordRentalException                         
-        └── VehiculeNotAvailableException  
+fil.l3.coo
+├── Main
+├── control/
+│   └── ControlCenter
+├── user/
+│   ├── User
+│   └── exceptions/
+│       ├── InsufficientFundsException
+│       └── NegativeAmountException
+├── vehicule/
+│   ├── VehiculeComponent (interface)
+│   ├── Vehicule (abstract)
+│   ├── decorator/
+│   │   ├── VehiculeDecorator (abstract)
+│   │   ├── BasketDecorator
+│   │   └── BaggageDecorator
+│   └── velo/
+│       ├── Velo (abstract)
+│       ├── VeloClassique
+│       └── VeloElectrique
+├── station/
+│   ├── Station<T>
+│   ├── StationObserver (interface)
+│   └── exceptions/
+│       ├── VehiculeNotFoundException
+│       ├── NullVehiculeException
+│       └── StationFullException
+└── rental/
+    ├── RentalSystem
+    ├── Location
+    └── exceptions/
+        ├── RentalException
+        ├── CannotAffordRentalException
+        └── VehiculeNotAvailableException
+│       └── NegativeAmountException
+├── vehicule/
+│   ├── VehiculeComponent (interface)
+│   ├── Vehicule (abstract)
+│   ├── decorator/
+│   │   ├── VehiculeDecorator (abstract)
+│   │   ├── BasketDecorator
+│   │   └── BaggageDecorator
+│   └── velo/
+│       ├── Velo (abstract)
+│       ├── VeloClassique
+│       └── VeloElectrique
+├── station/
+│   ├── Station<T>
+│   ├── StationObserver (interface)
+│   └── exceptions/
+│       ├── VehiculeNotFoundException
+│       ├── NullVehiculeException
+│       └── StationFullException
+└── rental/
+    ├── RentalSystem
+    ├── Location
+    └── exceptions/
+        ├── RentalException
+        ├── CannotAffordRentalException
+        └── VehiculeNotAvailableException
 
------
+---
 
 ## DIAGRAMME DE CLASSES
 
@@ -234,7 +347,7 @@ classDiagram
         +Location rentVehicule(User user, Station station, VehiculeComponent vehicule)
         +boolean returnVehicule(Location location, Station toStation)
     }
-    
+  
     class User {
         -double wallet
         +User()
@@ -245,24 +358,48 @@ classDiagram
         +boolean canAfford(double amount)
         +String toString()
     }
-    
+  
     class Station {
+        -int id
         -int capacity
-        -List~VehiculeComponent~ parkedBikes
+        -List~VehiculeComponent~ parkedVehicules
+        -List~StationObserver~ observers
         +Station(int capacity)
+        +int getId()
+        +void addObserver(StationObserver observer)
+        +void removeObserver(StationObserver observer)
         +int getOccupiedSpaces()
         +int getAvailableSpaces()
         +boolean hasAvailableSpace()
-        +boolean hasAvailableBikes()
-        +boolean hasBikes()
+        +boolean hasAvailableVehicules()
+        +boolean hasVehicules()
         +boolean isEmpty()
         +boolean isFull()
-        +void parkBike(VehiculeComponent velo)
-        +VehiculeComponent removeBike(VehiculeComponent velo)
-        +List~VehiculeComponent~ getParkedBikes()
+        +void parkVehicule(VehiculeComponent vehicule)
+        +VehiculeComponent removeVehicule(VehiculeComponent vehicule)
+        +List~VehiculeComponent~ getParkedVehicules()
         +String toString()
     }
     
+    class StationObserver {
+        <<interface>>
+        +void onVehicleParked(Station station, VehiculeComponent vehicule)
+        +void onVehicleRemoved(Station station, VehiculeComponent vehicule)
+    }
+    
+    class ControlCenter {
+        -List~Station~ stations
+        -Map~Integer, List~String~~ stationEvents
+        +ControlCenter()
+        +void registerStation(Station station)
+        +void unregisterStation(Station station)
+        +List~Station~ getStations()
+        +int getTotalVehicles()
+        +int getTotalCapacity()
+        +List~String~ getStationEvents(int stationId)
+        +void printFleetSummary()
+    }
+  
     class Location {
         -User user
         -VehiculeComponent vehicule
@@ -272,7 +409,7 @@ classDiagram
         +double getCost()
         +String toString()
     }
-    
+  
     class VehiculeComponent {
         <<interface>>
         +double getPrice()
@@ -281,7 +418,7 @@ classDiagram
         +void setAvailable(boolean available)
         +String getType()
     }
-    
+  
     class Vehicule {
         <<abstract>>
         -boolean available
@@ -293,7 +430,7 @@ classDiagram
         +void setAvailable(boolean available)
         +String toString()
     }
-    
+  
     class Velo {
         <<abstract>>
         +Velo()
@@ -302,21 +439,21 @@ classDiagram
         +String getType()*
         +String toString()
     }
-    
+  
     class VeloClassique {
         -double BASE_PRICE$
         +VeloClassique()
         +double getPrice()
         +String getType()
     }
-    
+  
     class VeloElectrique {
         -double BASE_PRICE$
         +VeloElectrique()
         +double getPrice()
         +String getType()
     }
-    
+  
     class VehiculeDecorator {
         <<abstract>>
         #VehiculeComponent vehicule
@@ -327,42 +464,42 @@ classDiagram
         +double getPrice()*
         +String getDescription()*
     }
-    
+  
     class BasketDecorator {
         -double BASKET_PRICE$
         +BasketDecorator(VehiculeComponent vehicule)
         +double getPrice()
         +String getDescription()
     }
-    
+  
     class BaggageDecorator {
         -double BAGGAGE_PRICE$
         +BaggageDecorator(VehiculeComponent vehicule)
         +double getPrice()
         +String getDescription()
     }
-    
+  
     class RentalException {
         <<exception>>
         +RentalException(String message)
         +RentalException(String message, Throwable cause)
     }
-    
+  
     class CannotAffordRentalException {
         <<exception>>
         +CannotAffordRentalException(String message)
     }
-    
+  
     class VehiculeNotAvailableException {
         <<exception>>
         +VehiculeNotAvailableException(String message)
     }
-    
+  
     class InsufficientFundsException {
         <<exception>>
         +InsufficientFundsException(String message)
     }
-    
+  
     class NegativeAmountException {
         <<exception>>
         +NegativeAmountException(String message)
@@ -379,29 +516,38 @@ classDiagram
         +NullVehiculeException()
         +NullVehiculeException(String message)
     }
-    
+  
     class StationFullException {
         <<exception>>
         +StationFullException()
         +StationFullException(String message)
     }
     
+    %% Relations d'héritage - Véhicules
     Vehicule --|> VehiculeComponent : implements
     Velo --|> Vehicule : extends
     VeloClassique --|> Velo : extends
     VeloElectrique --|> Velo : extends
     
+    %% Relations d'héritage - Decorators
     VehiculeDecorator --|> VehiculeComponent : implements
     BasketDecorator --|> VehiculeDecorator : extends
     BaggageDecorator --|> VehiculeDecorator : extends
     
+    %% Relations d'héritage - Exceptions
     CannotAffordRentalException --|> RentalException : extends
     VehiculeNotAvailableException --|> RentalException : extends
     
+    %% Pattern Observer
+    ControlCenter --|> StationObserver : implements
+    Station --> StationObserver : notifies
+    
+    %% Compositions importantes
     VehiculeDecorator --> VehiculeComponent : wraps
     Location --> User : user
     Location --> VehiculeComponent : vehicule
-    Station --> VehiculeComponent : parkedBikes
+    Station --> VehiculeComponent : parkedVehicules
+    ControlCenter --> Station : manages
 ```
 
 ---
@@ -409,21 +555,24 @@ classDiagram
 ## Principes de conception appliqués
 
 1. **SOLID :**
-   - **Single Responsibility** : Chaque classe a une responsabilité unique (User gère le portefeuille, Station gère les emplacements)
-   - **Open/Closed** : Pattern Decorator permet l'extension sans modification
+
+   - **Single Responsibility** : Chaque classe a une responsabilité unique (User gère le portefeuille, Station gère les emplacements, ControlCenter gère la supervision)
+   - **Open/Closed** : Pattern Decorator permet l'extension sans modification, Station générique facilite l'ajout de nouveaux types de véhicules
    - **Liskov Substitution** : Les sous-types (VeloClassique, VeloElectrique) sont substituables à Velo
-   - **Interface Segregation** : VehiculeComponent ne définit que les méthodes nécessaires
-   - **Dependency Inversion** : Station dépend de l'interface VehiculeComponent, pas des implémentations concrètes
-
+   - **Interface Segregation** : VehiculeComponent et StationObserver ne définissent que les méthodes nécessaires
+   - **Dependency Inversion** : Station dépend de l'interface VehiculeComponent et StationObserver, pas des implémentations concrètes
 2. **Design Patterns :**
-   - **Decorator** : Pour les accessoires de véhicules (composition dynamique)
-   - **Template Method** : Dans Vehicule (méthodes abstraites implémentées par les sous-classes)
 
+   - **Decorator** : Pour les accessoires de véhicules (composition dynamique)
+   - **Observer** : Pour la notification du Centre de Contrôle à chaque opération sur les stations
+   - **Template Method** : Dans Vehicule (méthodes abstraites implémentées par les sous-classes)
+   - **Generic Types** : Station<T> pour la type-safety et l'extensibilité
 3. **Bonnes pratiques :**
+
    - Encapsulation forte (attributs privés, getters/setters appropriés)
    - Validation des entrées avec exceptions métier
    - Documentation Javadoc complète
-   - Tests unitaires 
+   - Tests unitaires
 
 ---
 

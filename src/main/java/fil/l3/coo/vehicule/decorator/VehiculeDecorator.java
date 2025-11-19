@@ -1,6 +1,7 @@
 package fil.l3.coo.vehicule.decorator;
 
 import fil.l3.coo.vehicule.VehiculeComponent;
+import fil.l3.coo.vehicule.state.VehiculeState;
 
 /**
  * Abstract decorator class for vehicle accessories.
@@ -18,6 +19,16 @@ public abstract class VehiculeDecorator implements VehiculeComponent {
      */
     public VehiculeDecorator(VehiculeComponent vehicule) {
         this.vehicule = vehicule;
+    }
+    
+    /**
+     * Gets the wrapped vehicle component.
+     * This allows accessing the underlying vehicle.
+     * 
+     * @return the wrapped component
+     */
+    public VehiculeComponent getWrappedVehicule() {
+        return vehicule;
     }
     
     /**
@@ -70,5 +81,60 @@ public abstract class VehiculeDecorator implements VehiculeComponent {
     @Override
     public String getDescription() {
         return vehicule.getDescription();
+    }
+        
+    @Override
+    public VehiculeState getState() {
+        return vehicule.getState();
+    }
+    
+    @Override
+    public void setState(VehiculeState state) {
+        vehicule.setState(state);
+    }
+    
+    @Override
+    public String getStateName() {
+        return vehicule.getStateName();
+    }
+    
+    @Override
+    public int getRentalCount() {
+        return vehicule.getRentalCount();
+    }
+    
+    @Override
+    public void incrementRentalCount() {
+        vehicule.incrementRentalCount();
+    }
+    
+    @Override
+    public void resetRentalCount() {
+        vehicule.resetRentalCount();
+    }
+    
+    @Override
+    public boolean needsMaintenance() {
+        return vehicule.needsMaintenance();
+    }
+    
+    @Override
+    public int getIdleTimeIntervals() {
+        return vehicule.getIdleTimeIntervals();
+    }
+    
+    @Override
+    public void incrementIdleTime() {
+        vehicule.incrementIdleTime();
+    }
+    
+    @Override
+    public void resetIdleTime() {
+        vehicule.resetIdleTime();
+    }
+    
+    @Override
+    public boolean isAtRiskOfTheft() {
+        return vehicule.isAtRiskOfTheft();
     }
 }

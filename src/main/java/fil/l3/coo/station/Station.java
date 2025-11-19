@@ -15,8 +15,12 @@ import fil.l3.coo.station.exceptions.StationFullException;
  */
 public class Station<T extends VehiculeComponent> {
 
+    private static int nextId = 1;
+
+    private final int id;
     private final int capacity;
-    private List<T> parkedVehicules;
+    private final List<T> parkedVehicules;
+    private final List<StationObserver> observers;
 
     /**
      * Creates a new station with the specified capacity.
@@ -26,8 +30,19 @@ public class Station<T extends VehiculeComponent> {
      * @param capacity the desired capacity (will be clamped between 10 and 20)
      */
     public Station(int capacity) {
+        this.id = nextId++;
         this.capacity = Math.max(10, Math.min(20, capacity));
         this.parkedVehicules = new ArrayList<>();
+        this.observers = new ArrayList<>();
+    }
+
+    /**
+     * Gets the unique identifier of this station.
+     * 
+     * @return the station's ID
+     */
+    public int getId() {
+        return id;
     }
 
     /**
@@ -46,6 +61,47 @@ public class Station<T extends VehiculeComponent> {
      */
     public int getAvailableSpaces() {
         return capacity - parkedVehicules.size();
+    }
+
+    /**
+     * Gets this station's total capacity.
+     * 
+     * @return the capacity
+     */
+    public int getCapacity() {
+        return capacity;
+    }
+
+    /**
+     * Registers an observer to receive station events.
+     * 
+     * @param observer observer to add
+     */
+    public void addObserver(StationObserver observer) {
+        if (observer != null && !observers.contains(observer)) {
+            observers.add(observer);
+        }
+    }
+
+    /**
+     * Unregisters an observer.
+     * 
+     * @param observer observer to remove
+     */
+    public void removeObserver(StationObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyVehicleParked(T vehicule) {
+        for (StationObserver observer : observers) {
+            observer.onVehicleParked(this, vehicule);
+        }
+    }
+
+    private void notifyVehicleRemoved(T vehicule) {
+        for (StationObserver observer : observers) {
+            observer.onVehicleRemoved(this, vehicule);
+        }
     }
 
     /**
@@ -112,6 +168,7 @@ public class Station<T extends VehiculeComponent> {
         
         parkedVehicules.add(vehicule);
         vehicule.setAvailable(true);
+        notifyVehicleParked(vehicule);
     }
 
     /**
@@ -134,6 +191,7 @@ public class Station<T extends VehiculeComponent> {
         
         parkedVehicules.remove(vehicule);
         vehicule.setAvailable(false);
+        notifyVehicleRemoved(vehicule);
         return vehicule;
     }
 
@@ -154,8 +212,9 @@ public class Station<T extends VehiculeComponent> {
     @Override
     public String toString() {
         return "Station{" +
-                "occupiedSpaces=" + parkedVehicules.size() +
-                ", capacity=" + capacity +
-                '}';
+            "id=" + id +
+            ", occupiedSpaces=" + parkedVehicules.size() +
+            ", capacity=" + capacity +
+            '}';
     }
 }

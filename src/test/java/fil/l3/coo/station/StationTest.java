@@ -1,6 +1,9 @@
 package fil.l3.coo.station;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -82,6 +85,34 @@ public class StationTest {
         assertThrows(StationFullException.class, () -> {
             station.parkVehicule(extraVelo);
         });
+    }
+
+    @Test
+    public void testObserversReceiveNotifications() throws NullVehiculeException, StationFullException, VehiculeNotFoundException {
+        RecordingObserver observer = new RecordingObserver();
+        station.addObserver(observer);
+
+        VehiculeComponent velo = new VeloClassique();
+        station.parkVehicule(velo);
+        station.removeVehicule(velo);
+
+        assertEquals(2, observer.events.size());
+        assertTrue(observer.events.get(0).contains("parked"));
+        assertTrue(observer.events.get(1).contains("removed"));
+    }
+
+    private static class RecordingObserver implements StationObserver {
+        private final List<String> events = new ArrayList<>();
+
+        @Override
+        public void onVehicleParked(Station<?> station, VehiculeComponent vehicule) {
+            events.add("parked-" + station.getId() + "-" + vehicule.getDescription());
+        }
+
+        @Override
+        public void onVehicleRemoved(Station<?> station, VehiculeComponent vehicule) {
+            events.add("removed-" + station.getId() + "-" + vehicule.getDescription());
+        }
     }
     
 }

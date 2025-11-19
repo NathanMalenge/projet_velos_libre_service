@@ -16,6 +16,8 @@ Ce projet implémente un système de gestion de location de véhicules urbains. 
 - maintenance reparateur
 - voleur
 - pattern visitor
+- centre de controle à faire d'abord ---
+- id dans station à faire d'abord ---
 
 ---
 

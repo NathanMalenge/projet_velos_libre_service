@@ -19,10 +19,21 @@ public class ControlCenter implements StationObserver {
 
     private final List<Station<?>> stations;
     private final Map<Integer, List<String>> stationEvents;
+    private final Repairer repairer;
 
     public ControlCenter() {
         this.stations = new ArrayList<>();
         this.stationEvents = new HashMap<>();
+        this.repairer = new Repairer();
+    }
+    
+    /**
+     * Gets the repair service managed by this control center.
+     * 
+     * @return the repairer
+     */
+    public Repairer getRepairer() {
+        return repairer;
     }
 
     /**
@@ -92,6 +103,16 @@ public class ControlCenter implements StationObserver {
         }
         
         stationEvents.get(stationId).add(event);
+        
+        // Détecter si le véhicule nécessite une maintenance et le réparer immédiatement
+        if (vehicule.needsMaintenance() || "EN_MAINTENANCE".equals(vehicule.getStateName())) {
+            boolean repaired = repairer.repair(station, vehicule);
+            
+            if (repaired) {
+                String maintenanceEvent = String.format("Vehicle repaired: %s", vehicule.getDescription());
+                stationEvents.get(stationId).add(maintenanceEvent);
+            }
+        }
     }
 
     @Override
@@ -107,6 +128,7 @@ public class ControlCenter implements StationObserver {
         
         stationEvents.get(stationId).add(event);
     }
+
 
     
 }

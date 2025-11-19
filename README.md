@@ -13,11 +13,8 @@ Ce projet implémente un système de gestion de location de véhicules urbains. 
 
 - simulation temporelle
 - Redistrib
-- maintenance reparateur
+- maintenance reparateur (Pattern Visitor)
 - voleur
-- pattern visitor
-- centre de controle à faire d'abord ---
-- id dans station à faire d'abord ---
 
 ---
 
@@ -256,7 +253,58 @@ controlCenter.printFleetSummary(); // Affiche les statistiques de la flotte
 - Identifiants uniques facilitent le suivi et la gestion de la flotte
 - Extensible pour d'autres types de véhicules (trottinettes, scooters, etc.)
 
-### 9. Tests unitaires complets
+### 9. Pattern State pour le cycle de vie des véhicules
+
+**Principe :** Le Pattern State permet à un véhicule de changer de comportement selon son état actuel. Chaque état définit quelles transitions sont possibles et quelles opérations sont autorisées.
+
+**Mise en œuvre :**
+
+- `VehiculeState` : Interface définissant le contrat pour tous les états (canBeRented, rent, returnVehicule, sendToMaintenance, markAsStolen)
+- `DisponibleState` : État initial, véhicule disponible pour location
+- `EnLocationState` : Véhicule actuellement loué à un utilisateur
+- `EnMaintenanceState` : Véhicule en cours de maintenance par un réparateur
+- `HorsServiceState` : Véhicule hors service (transition vers maintenance)
+- `VoleState` : État terminal, véhicule volé (plus aucune transition possible)
+
+**Fonctionnalités :**
+
+- **Suivi automatique des locations** : Compteur incrémenté à chaque location
+- **Maintenance automatique** : Après 10 locations, retour automatique vers maintenance
+- **Suivi du temps d'inactivité** : Compteur d'intervalles sans location
+- **Risque de vol** : Après 2 intervalles d'inactivité, véhicule marquable comme volé
+- **Transitions d'état validées** : Chaque état définit ses transitions autorisées
+
+**Avantages :**
+
+- Gestion explicite du cycle de vie des véhicules
+- Prévention des opérations invalides (ex: louer un véhicule volé)
+- Maintenance préventive automatique basée sur l'utilisation
+- Extension facile : ajout de nouveaux états sans modifier le code existant
+- Conforme aux exigences du sujet (gestion de la maintenance et du vol)
+
+**Exemple d'utilisation :**
+
+```java
+Vehicule velo = new VeloClassique();
+System.out.println(velo.getStateName()); // "DISPONIBLE"
+
+// Location
+velo.getState().rent(velo);
+System.out.println(velo.getStateName()); // "EN_LOCATION"
+
+// Retour
+velo.getState().returnVehicule(velo);
+System.out.println(velo.getStateName()); // "DISPONIBLE"
+
+// Après 10 locations, retour automatique vers maintenance
+for (int i = 0; i < 10; i++) {
+    velo.getState().rent(velo);
+    velo.getState().returnVehicule(velo);
+}
+System.out.println(velo.getStateName()); // "HORS_SERVICE"
+```
+
+### 10. Tests unitaires complets
 
 **Organisation :**
 
@@ -272,7 +320,7 @@ controlCenter.printFleetSummary(); // Affiche les statistiques de la flotte
 - Tests du système de location (scénarios de location et retour)
 - Tests du Pattern Observer (notifications du ControlCenter)
 - Tests de l'unicité des IDs de stations
-- **36 tests au total, tous passent avec succès**
+- Tests du Pattern State (transitions d'état, maintenance automatique, vol)
 
 ---
 
@@ -294,32 +342,13 @@ fil.l3.coo
 │   │   ├── VehiculeDecorator (abstract)
 │   │   ├── BasketDecorator
 │   │   └── BaggageDecorator
-│   └── velo/
-│       ├── Velo (abstract)
-│       ├── VeloClassique
-│       └── VeloElectrique
-├── station/
-│   ├── Station<T>
-│   ├── StationObserver (interface)
-│   └── exceptions/
-│       ├── VehiculeNotFoundException
-│       ├── NullVehiculeException
-│       └── StationFullException
-└── rental/
-    ├── RentalSystem
-    ├── Location
-    └── exceptions/
-        ├── RentalException
-        ├── CannotAffordRentalException
-        └── VehiculeNotAvailableException
-│       └── NegativeAmountException
-├── vehicule/
-│   ├── VehiculeComponent (interface)
-│   ├── Vehicule (abstract)
-│   ├── decorator/
-│   │   ├── VehiculeDecorator (abstract)
-│   │   ├── BasketDecorator
-│   │   └── BaggageDecorator
+│   ├── state/
+│   │   ├── VehiculeState (interface)
+│   │   ├── DisponibleState
+│   │   ├── EnLocationState
+│   │   ├── EnMaintenanceState
+│   │   ├── HorsServiceState
+│   │   └── VoleState
 │   └── velo/
 │       ├── Velo (abstract)
 │       ├── VeloClassique
@@ -424,13 +453,95 @@ classDiagram
     class Vehicule {
         <<abstract>>
         -boolean available
+        -VehiculeState state
+        -int rentalCount
+        -int idleTimeIntervals
         +Vehicule()
         +double getPrice()*
         +String getDescription()*
         +String getType()*
         +boolean isAvailable()
         +void setAvailable(boolean available)
+        +VehiculeState getState()
+        +void setState(VehiculeState state)
+        +String getStateName()
+        +int getRentalCount()
+        +void incrementRentalCount()
+        +void resetRentalCount()
+        +boolean needsMaintenance()
+        +int getIdleTimeIntervals()
+        +void incrementIdleTime()
+        +void resetIdleTime()
+        +boolean isAtRiskOfTheft()
         +String toString()
+    }
+    
+    class VehiculeState {
+        <<interface>>
+        +boolean canBeRented()
+        +boolean canBeReturned()
+        +boolean canBeRedistributed()
+        +void rent(Vehicule vehicule)
+        +void returnVehicule(Vehicule vehicule)
+        +void sendToMaintenance(Vehicule vehicule)
+        +void markAsStolen(Vehicule vehicule)
+        +String getStateName()
+    }
+    
+    class DisponibleState {
+        +boolean canBeRented()
+        +boolean canBeReturned()
+        +boolean canBeRedistributed()
+        +void rent(Vehicule vehicule)
+        +void returnVehicule(Vehicule vehicule)
+        +void sendToMaintenance(Vehicule vehicule)
+        +void markAsStolen(Vehicule vehicule)
+        +String getStateName()
+    }
+    
+    class EnLocationState {
+        +boolean canBeRented()
+        +boolean canBeReturned()
+        +boolean canBeRedistributed()
+        +void rent(Vehicule vehicule)
+        +void returnVehicule(Vehicule vehicule)
+        +void sendToMaintenance(Vehicule vehicule)
+        +void markAsStolen(Vehicule vehicule)
+        +String getStateName()
+    }
+    
+    class EnMaintenanceState {
+        +boolean canBeRented()
+        +boolean canBeReturned()
+        +boolean canBeRedistributed()
+        +void rent(Vehicule vehicule)
+        +void returnVehicule(Vehicule vehicule)
+        +void sendToMaintenance(Vehicule vehicule)
+        +void markAsStolen(Vehicule vehicule)
+        +void completeMaintenance(Vehicule vehicule)
+        +String getStateName()
+    }
+    
+    class HorsServiceState {
+        +boolean canBeRented()
+        +boolean canBeReturned()
+        +boolean canBeRedistributed()
+        +void rent(Vehicule vehicule)
+        +void returnVehicule(Vehicule vehicule)
+        +void sendToMaintenance(Vehicule vehicule)
+        +void markAsStolen(Vehicule vehicule)
+        +String getStateName()
+    }
+    
+    class VoleState {
+        +boolean canBeRented()
+        +boolean canBeReturned()
+        +boolean canBeRedistributed()
+        +void rent(Vehicule vehicule)
+        +void returnVehicule(Vehicule vehicule)
+        +void sendToMaintenance(Vehicule vehicule)
+        +void markAsStolen(Vehicule vehicule)
+        +String getStateName()
     }
   
     class Velo {
@@ -536,6 +647,13 @@ classDiagram
     BasketDecorator --|> VehiculeDecorator : extends
     BaggageDecorator --|> VehiculeDecorator : extends
     
+    %% Relations d'héritage - States
+    DisponibleState --|> VehiculeState : implements
+    EnLocationState --|> VehiculeState : implements
+    EnMaintenanceState --|> VehiculeState : implements
+    HorsServiceState --|> VehiculeState : implements
+    VoleState --|> VehiculeState : implements
+    
     %% Relations d'héritage - Exceptions
     CannotAffordRentalException --|> RentalException : extends
     VehiculeNotAvailableException --|> RentalException : extends
@@ -543,6 +661,9 @@ classDiagram
     %% Pattern Observer
     ControlCenter --|> StationObserver : implements
     Station --> StationObserver : notifies
+    
+    %% Pattern State
+    Vehicule --> VehiculeState : has current state
     
     %% Compositions importantes
     VehiculeDecorator --> VehiculeComponent : wraps
@@ -567,6 +688,7 @@ classDiagram
 
    - **Decorator** : Pour les accessoires de véhicules (composition dynamique)
    - **Observer** : Pour la notification du Centre de Contrôle à chaque opération sur les stations
+   - **State** : Pour la gestion du cycle de vie des véhicules (disponible, en location, en maintenance, hors service, volé)
    - **Template Method** : Dans Vehicule (méthodes abstraites implémentées par les sous-classes)
    - **Generic Types** : Station<T> pour la type-safety et l'extensibilité
 3. **Bonnes pratiques :**

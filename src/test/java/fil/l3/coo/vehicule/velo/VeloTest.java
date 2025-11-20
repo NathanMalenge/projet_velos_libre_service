@@ -26,5 +26,5 @@ public abstract class VeloTest extends VehiculeTest {
     @Override
     protected Vehicule createVehicule() {
         return createVelo();
-    } //TODO faire les test
+    }
 }

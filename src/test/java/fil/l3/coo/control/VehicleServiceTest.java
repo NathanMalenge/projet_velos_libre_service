@@ -38,21 +38,16 @@ public class VehicleServiceTest {
 
     @Test
     public void testVehicleServiceInterface() {
-        // Démontrer que Repairer implémente VehicleService
         VehicleService service = repairer;
-        
         vehicule.setState(new EnMaintenanceState());
         boolean serviced = service.service(station, vehicule);
-        
         assertTrue(serviced);
         assertEquals("REPAIR", service.getServiceType());
     }
     
     @Test
     public void testControlCenterHasRepairService() {
-        // Vérifier que le ControlCenter a bien un service de réparation par défaut
         VehicleService repairService = controlCenter.getService("REPAIR");
-        
         assertNotNull(repairService);
         assertEquals("REPAIR", repairService.getServiceType());
     }

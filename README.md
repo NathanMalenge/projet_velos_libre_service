@@ -13,7 +13,6 @@ Ce projet implémente un système de gestion de location de véhicules urbains. 
 
 - simulation temporelle
 - Redistrib
-- maintenance reparateur (Pattern Visitor)
 - voleur
 
 ---
@@ -304,11 +303,48 @@ for (int i = 0; i < 10; i++) {
 System.out.println(velo.getStateName()); // "HORS_SERVICE"
 ```
 
-### 10. Tests unitaires complets
+### 10. Pattern Visitor pour la maintenance des véhicules
+
+**Principe :** Le Pattern Visitor permet d'ajouter de nouvelles opérations sur les véhicules sans modifier leurs classes. Il sépare les algorithmes de maintenance des structures de véhicules sur lesquelles ils opèrent.
+
+**Mise en œuvre :**
+
+- `VehicleService` : Interface définissant le contrat pour tous les services de maintenance (service, getServiceType)
+- `Repairer` : Implémentation concrète effectuant les réparations sur les véhicules
+- `ControlCenter` : Gère une liste de services disponibles pour la flotte
+
+**Fonctionnalités :**
+
+- **Réparation des véhicules** : Le `Repairer` peut réparer un véhicule en état `EN_MAINTENANCE`
+- **Gestion des décorateurs** : Unwrap automatique des décorateurs pour accéder au véhicule de base
+- **Intégration avec le State pattern** : Vérifie l'état du véhicule avant la réparation
+- **Extensibilité** : Nouveaux services (nettoyage, inspection) peuvent être ajoutés facilement
+
+**Avantages :**
+
+- Séparation des responsabilités entre véhicules et services
+- Extension facile : ajout de nouveaux services sans modifier les classes de véhicules
+- Respect du principe Open/Closed
+- Compatible avec les patterns Decorator et State
+
+**Exemple d'utilisation :**
+
+```java
+Vehicule velo = new VeloClassique();
+velo.getState().sendToMaintenance(velo);
+System.out.println(velo.getStateName()); // "EN_MAINTENANCE"
+
+Repairer repairer = new Repairer();
+repairer.service(velo);
+System.out.println(velo.getStateName()); // "DISPONIBLE"
+System.out.println(velo.getRentalCount()); // 0 (compteur réinitialisé)
+```
+
+### 11. Tests unitaires complets
 
 **Organisation :**
 
-- Tests pour chaque classe principale : `UserTest`, `StationTest`, `VehiculeTest`, `RentalSystemTest`, `ControlCenterTest`
+- Tests pour chaque classe principale : `UserTest`, `StationTest`, `VehiculeTest`, `RentalSystemTest`, `ControlCenterTest`, `VehicleServiceTest`
 - Utilisation de JUnit 5 avec `@BeforeEach` pour l'initialisation
 - Tests des cas nominaux et des cas d'erreur (exceptions)
 
@@ -321,6 +357,9 @@ System.out.println(velo.getStateName()); // "HORS_SERVICE"
 - Tests du Pattern Observer (notifications du ControlCenter)
 - Tests de l'unicité des IDs de stations
 - Tests du Pattern State (transitions d'état, maintenance automatique, vol)
+- Tests du Pattern Visitor (réparation des véhicules, gestion des états)
+- Tests des véhicules spécifiques (VeloClassique, VeloElectrique avec prix et types)
+- Tests de la classe Location (getters, coût, toString)
 
 ---
 
@@ -329,7 +368,9 @@ System.out.println(velo.getStateName()); // "HORS_SERVICE"
 fil.l3.coo
 ├── Main
 ├── control/
-│   └── ControlCenter
+│   ├── ControlCenter
+│   ├── VehicleService (interface)
+│   └── Repairer
 ├── user/
 │   ├── User
 │   └── exceptions/
@@ -421,7 +462,10 @@ classDiagram
     class ControlCenter {
         -List~Station~ stations
         -Map~Integer, List~String~~ stationEvents
+        -List~VehicleService~ services
         +ControlCenter()
+        +void registerService(VehicleService service)
+        +List~VehicleService~ getServices()
         +void registerStation(Station station)
         +void unregisterStation(Station station)
         +List~Station~ getStations()
@@ -636,6 +680,18 @@ classDiagram
         +StationFullException(String message)
     }
     
+    class VehicleService {
+        <<interface>>
+        +boolean service(Station station, VehiculeComponent vehicule)
+        +String getServiceType()
+    }
+    
+    class Repairer {
+        +boolean service(Station station, VehiculeComponent vehicule)
+        +String getServiceType()
+        +boolean repair(Station station, VehiculeComponent vehicule)
+    }
+    
     %% Relations d'héritage - Véhicules
     Vehicule --|> VehiculeComponent : implements
     Velo --|> Vehicule : extends
@@ -665,6 +721,10 @@ classDiagram
     %% Pattern State
     Vehicule --> VehiculeState : has current state
     
+    %% Pattern Visitor
+    Repairer --|> VehicleService : implements
+    ControlCenter --> VehicleService : manages
+    
     %% Compositions importantes
     VehiculeDecorator --> VehiculeComponent : wraps
     Location --> User : user
@@ -689,6 +749,7 @@ classDiagram
    - **Decorator** : Pour les accessoires de véhicules (composition dynamique)
    - **Observer** : Pour la notification du Centre de Contrôle à chaque opération sur les stations
    - **State** : Pour la gestion du cycle de vie des véhicules (disponible, en location, en maintenance, hors service, volé)
+   - **Visitor** : Pour la maintenance des véhicules (VehicleService, Repairer)
    - **Template Method** : Dans Vehicule (méthodes abstraites implémentées par les sous-classes)
    - **Generic Types** : Station<T> pour la type-safety et l'extensibilité
 3. **Bonnes pratiques :**

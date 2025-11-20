@@ -25,8 +25,6 @@ public class ControlCenter implements StationObserver {
         this.stations = new ArrayList<>();
         this.stationEvents = new HashMap<>();
         this.services = new ArrayList<>();
-        
-        // Par défaut, ajouter le service de réparation
         this.services.add(new Repairer());
     }
     
@@ -66,6 +64,8 @@ public class ControlCenter implements StationObserver {
     /**
      * Registers a station to be supervised. The control center subscribes to
      * station events and starts tracking its metrics.
+     * 
+     * @param station the station to register
      */
     public void registerStation(Station<?> station) {
         if (station != null && !stations.contains(station)) {
@@ -78,6 +78,8 @@ public class ControlCenter implements StationObserver {
     /**
      * Unregisters a station. Observers are detached and events history is
      * dropped.
+     * 
+     * @param station the station to unregister
      */
     public void unregisterStation(Station<?> station) {
         if (station != null && stations.remove(station)) {
@@ -95,6 +97,8 @@ public class ControlCenter implements StationObserver {
 
     /**
      * Computes the total number of vehicles currently parked in all stations.
+     * 
+     * @return the total number of parked vehicles
      */
     public int getTotalVehicles() {
         return stations.stream()
@@ -104,6 +108,8 @@ public class ControlCenter implements StationObserver {
 
     /**
      * Computes the total capacity across all stations.
+     * 
+     * @return the total capacity of all stations
      */
     public int getTotalCapacity() {
         return stations.stream()
@@ -113,6 +119,9 @@ public class ControlCenter implements StationObserver {
 
     /**
      * Returns the recorded events for a station, ordered chronologically.
+     * 
+     * @param stationId the ID of the station
+     * @return the list of events for the station
      */
     public List<String> getStationEvents(int stationId) {
         return new ArrayList<>(stationEvents.getOrDefault(stationId, List.of()));
@@ -130,8 +139,6 @@ public class ControlCenter implements StationObserver {
         }
         
         stationEvents.get(stationId).add(event);
-        
-        // Détecter si le véhicule nécessite une maintenance et appeler le service de réparation
         if (vehicule.needsMaintenance() || "EN_MAINTENANCE".equals(vehicule.getStateName())) {
             VehicleService repairService = getService("REPAIR");
             if (repairService != null) {
@@ -166,8 +173,6 @@ public class ControlCenter implements StationObserver {
         System.out.println("\n=== Control Center Summary ===");
         System.out.println("Stations: " + stations.size());
         System.out.println("Total vehicles: " + getTotalVehicles() + " / " + getTotalCapacity());
-        
-        // Afficher les services enregistrés
         System.out.println("\nActive services:");
         for (VehicleService service : services) {
             System.out.printf(" - %s%n", service.getServiceType());

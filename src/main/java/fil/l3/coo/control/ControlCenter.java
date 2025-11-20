@@ -19,21 +19,48 @@ public class ControlCenter implements StationObserver {
 
     private final List<Station<?>> stations;
     private final Map<Integer, List<String>> stationEvents;
-    private final Repairer repairer;
+    private final List<VehicleService> services;
 
     public ControlCenter() {
         this.stations = new ArrayList<>();
         this.stationEvents = new HashMap<>();
-        this.repairer = new Repairer();
+        this.services = new ArrayList<>();
+        
+        // Par défaut, ajouter le service de réparation
+        this.services.add(new Repairer());
     }
     
     /**
-     * Gets the repair service managed by this control center.
+     * Enregistre un nouveau service métier (réparateur, peintre, etc.).
      * 
-     * @return the repairer
+     * @param service le service à enregistrer
      */
-    public Repairer getRepairer() {
-        return repairer;
+    public void registerService(VehicleService service) {
+        if (service != null && !services.contains(service)) {
+            services.add(service);
+        }
+    }
+    
+    /**
+     * Récupère tous les services enregistrés.
+     * 
+     * @return la liste des services
+     */
+    public List<VehicleService> getServices() {
+        return new ArrayList<>(services);
+    }
+    
+    /**
+     * Récupère un service par son type.
+     * 
+     * @param serviceType le type de service (ex: "REPAIR", "PAINT")
+     * @return le service, ou null si non trouvé
+     */
+    public VehicleService getService(String serviceType) {
+        return services.stream()
+                .filter(s -> s.getServiceType().equals(serviceType))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -104,13 +131,16 @@ public class ControlCenter implements StationObserver {
         
         stationEvents.get(stationId).add(event);
         
-        // Détecter si le véhicule nécessite une maintenance et le réparer immédiatement
+        // Détecter si le véhicule nécessite une maintenance et appeler le service de réparation
         if (vehicule.needsMaintenance() || "EN_MAINTENANCE".equals(vehicule.getStateName())) {
-            boolean repaired = repairer.repair(station, vehicule);
-            
-            if (repaired) {
-                String maintenanceEvent = String.format("Vehicle repaired: %s", vehicule.getDescription());
-                stationEvents.get(stationId).add(maintenanceEvent);
+            VehicleService repairService = getService("REPAIR");
+            if (repairService != null) {
+                boolean serviced = repairService.service(station, vehicule);
+                
+                if (serviced) {
+                    String maintenanceEvent = String.format("Vehicle repaired: %s", vehicule.getDescription());
+                    stationEvents.get(stationId).add(maintenanceEvent);
+                }
             }
         }
     }
@@ -129,6 +159,29 @@ public class ControlCenter implements StationObserver {
         stationEvents.get(stationId).add(event);
     }
 
+    /**
+     * Prints a fleet summary (for quick manual demos). Purely informational.
+     */
+    public void printFleetSummary() {
+        System.out.println("\n=== Control Center Summary ===");
+        System.out.println("Stations: " + stations.size());
+        System.out.println("Total vehicles: " + getTotalVehicles() + " / " + getTotalCapacity());
+        
+        // Afficher les services enregistrés
+        System.out.println("\nActive services:");
+        for (VehicleService service : services) {
+            System.out.printf(" - %s%n", service.getServiceType());
+        }
+        
+        System.out.println("\nStations:");
+        for (Station<?> station : stations) {
+            System.out.printf(" - Station %d: %d/%d occupied%n",
+                    station.getId(),
+                    station.getOccupiedSpaces(),
+                    station.getCapacity());
+        }
+        System.out.println("==============================\n");
+    }
 
     
 }

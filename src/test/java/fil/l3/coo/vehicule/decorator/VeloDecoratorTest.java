@@ -16,9 +16,17 @@ import fil.l3.coo.vehicule.velo.VeloClassique;
  */
 public class VeloDecoratorTest {
     
+    /**
+     * Factory method to create the base vehicle for decorator tests.
+     * Can be overridden to test decorators with other vehicle types.
+     */
+    protected VehiculeComponent createBaseVehicule() {
+        return new VeloClassique();
+    }
+    
     @Test
     public void testSingleDecorator() {
-        VehiculeComponent velo = new VeloClassique();
+        VehiculeComponent velo = createBaseVehicule();
         velo = new BasketDecorator(velo);
         
         assertEquals(1.5, velo.getPrice(), 0.01); // 1.0 + 0.5
@@ -28,7 +36,7 @@ public class VeloDecoratorTest {
     
     @Test
     public void testMultipleDecorators() {
-        VehiculeComponent velo = new VeloClassique();
+        VehiculeComponent velo = createBaseVehicule();
         velo = new BasketDecorator(velo);
         velo = new BaggageDecorator(velo);
         
@@ -38,7 +46,7 @@ public class VeloDecoratorTest {
     
     @Test
     public void testAvailabilityPropagation() {
-        VehiculeComponent velo = new VeloClassique();
+        VehiculeComponent velo = createBaseVehicule();
         velo = new BasketDecorator(velo);
         velo = new BaggageDecorator(velo);
         

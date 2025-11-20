@@ -10,7 +10,17 @@ import fil.l3.coo.vehicule.state.EnMaintenanceState;
  * en maintenance, n'importe quand, sans limitation de capacité.
  * Représente une société de réparation avec des ressources illimitées.
  */
-public class Repairer {
+public class Repairer implements VehicleService {
+    
+    @Override
+    public boolean service(Station<?> station, VehiculeComponent vehicule) {
+        return repair(station, vehicule);
+    }
+    
+    @Override
+    public String getServiceType() {
+        return "REPAIR";
+    }
     
     /**
      * Répare un véhicule en maintenance dans une station donnée.

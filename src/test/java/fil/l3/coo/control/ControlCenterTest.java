@@ -19,6 +19,14 @@ public class ControlCenterTest {
     private ControlCenter controlCenter;
     private Station<VehiculeComponent> station;
 
+    /**
+     * Factory method to create a vehicle for tests.
+     * Can be overridden to test with different vehicle types.
+     */
+    protected VehiculeComponent createVehicule() {
+        return new VeloClassique();
+    }
+
     @BeforeEach
     public void setUp() {
         controlCenter = new ControlCenter();
@@ -30,8 +38,8 @@ public class ControlCenterTest {
         controlCenter.registerStation(station);
         assertTrue(controlCenter.getStations().contains(station));
 
-        station.parkVehicule(new VeloClassique());
-        station.parkVehicule(new VeloClassique());
+        station.parkVehicule(createVehicule());
+        station.parkVehicule(createVehicule());
 
         assertEquals(2, controlCenter.getTotalVehicles());
 
@@ -43,7 +51,7 @@ public class ControlCenterTest {
     @Test
     public void unregisterStationStopsReceivingEvents() throws NullVehiculeException, StationFullException, VehiculeNotFoundException {
         controlCenter.registerStation(station);
-        VehiculeComponent velo = new VeloClassique();
+        VehiculeComponent velo = createVehicule();
         station.parkVehicule(velo);
         assertFalse(controlCenter.getStationEvents(station.getId()).isEmpty());
 

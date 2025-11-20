@@ -12,11 +12,19 @@ import fil.l3.coo.vehicule.Vehicule;
  */
 public class VehiculeStateTest {
     
-    private VeloClassique velo;
+    private Vehicule velo;
+    
+    /**
+     * Factory method to create the vehicle under test.
+     * Can be overridden by subclasses to test other vehicle types.
+     */
+    protected Vehicule createVehicule() {
+        return new VeloClassique();
+    }
     
     @BeforeEach
     public void setUp() {
-        velo = new VeloClassique();
+        velo = createVehicule();
     }
     
     @Test

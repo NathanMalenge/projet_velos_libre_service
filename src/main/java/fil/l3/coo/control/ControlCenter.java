@@ -17,14 +17,20 @@ import fil.l3.coo.vehicule.VehiculeComponent;
  */
 public class ControlCenter implements StationObserver {
 
-    private final List<Station<?>> stations;
+    private final List<Station<VehiculeComponent>> stations;
     private final Map<Integer, List<String>> stationEvents;
     private final List<VehicleService> services;
+    private final Map<Integer, Integer> emptyStreaks; 
+    private final Map<Integer, Integer> fullStreaks; 
+    private RedistributionStrategy redistributionStrategy;
 
     public ControlCenter() {
         this.stations = new ArrayList<>();
         this.stationEvents = new HashMap<>();
         this.services = new ArrayList<>();
+        this.emptyStreaks = new HashMap<>();
+        this.fullStreaks = new HashMap<>();
+        this.redistributionStrategy = new RoundRobinRedistribution();
         this.services.add(new Repairer());
     }
     
@@ -67,11 +73,13 @@ public class ControlCenter implements StationObserver {
      * 
      * @param station the station to register
      */
-    public void registerStation(Station<?> station) {
+    public void registerStation(Station<VehiculeComponent> station) {
         if (station != null && !stations.contains(station)) {
             stations.add(station);
             station.addObserver(this);
             stationEvents.putIfAbsent(station.getId(), new ArrayList<>());
+            emptyStreaks.put(station.getId(), 0);
+            fullStreaks.put(station.getId(), 0);
         }
     }
 
@@ -81,17 +89,19 @@ public class ControlCenter implements StationObserver {
      * 
      * @param station the station to unregister
      */
-    public void unregisterStation(Station<?> station) {
+    public void unregisterStation(Station<VehiculeComponent> station) {
         if (station != null && stations.remove(station)) {
             station.removeObserver(this);
             stationEvents.remove(station.getId());
+            emptyStreaks.remove(station.getId());
+            fullStreaks.remove(station.getId());
         }
     }
 
     /**
      * @return a defensive copy of the registered stations list
      */
-    public List<Station<?>> getStations() {
+    public List<Station<VehiculeComponent>> getStations() {
         return new ArrayList<>(stations);
     }
 
@@ -164,6 +174,53 @@ public class ControlCenter implements StationObserver {
         }
         
         stationEvents.get(stationId).add(event);
+    }
+
+    /**
+     * Called once per simulation tick to update supervision rules and possibly
+     * trigger a redistribution if stations stay empty or full for too long.
+     */
+    public void onTick() {
+        boolean needRedistribution = false;
+        for (Station<VehiculeComponent> s : stations) {
+            int id = s.getId();
+            int empty = emptyStreaks.getOrDefault(id, 0);
+            int full = fullStreaks.getOrDefault(id, 0);
+
+            if (s.isEmpty()) {
+                empty++;
+            } else {
+                empty = 0;
+            }
+
+            if (s.isFull()) {
+                full++;
+            } else {
+                full = 0;
+            }
+
+            emptyStreaks.put(id, empty);
+            fullStreaks.put(id, full);
+
+            if (empty >= 2 || full >= 2) {
+                needRedistribution = true;
+            }
+        }
+
+        if (needRedistribution && redistributionStrategy != null) {
+            redistributionStrategy.redistribute(stations);
+            for (Station<VehiculeComponent> s : stations) {
+                emptyStreaks.put(s.getId(), 0);
+                fullStreaks.put(s.getId(), 0);
+            }
+        }
+    }
+
+    /**
+     * Sets the redistribution strategy.
+     */
+    public void setRedistributionStrategy(RedistributionStrategy strategy) {
+        if (strategy != null) this.redistributionStrategy = strategy;
     }
 
     /**

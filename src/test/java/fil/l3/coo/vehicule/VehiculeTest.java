@@ -26,5 +26,5 @@ public abstract class VehiculeTest {
         
         vehicule.setAvailable(true);
         assertTrue(vehicule.isAvailable(), "Vehicle should be available after setting");
-    } //TODO faire les test
+    } 
 }

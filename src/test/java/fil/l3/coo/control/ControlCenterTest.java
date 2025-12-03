@@ -61,5 +61,68 @@ public class ControlCenterTest {
         assertFalse(controlCenter.getStations().contains(station));
         assertTrue(controlCenter.getStationEvents(station.getId()).isEmpty());
         assertEquals(0, controlCenter.getTotalVehicles());
+    }   
+    
+    @Test
+    public void testRegisterServiceIgnoresNull() {
+        int initialSize = controlCenter.getServices().size();
+        controlCenter.registerService(null);
+        assertEquals(initialSize, controlCenter.getServices().size());
+    }
+    
+    @Test
+    public void testRegisterServiceIgnoresDuplicates() {
+        VehicleService service = controlCenter.getService("REPAIR");
+        int initialSize = controlCenter.getServices().size();
+        
+        controlCenter.registerService(service);
+        assertEquals(initialSize, controlCenter.getServices().size());
+    }
+    
+    @Test
+    public void testGetServiceByType() {
+        VehicleService repairService = controlCenter.getService("REPAIR");
+        assertNotNull(repairService);
+        assertEquals("REPAIR", repairService.getServiceType());
+    }
+    
+    @Test
+    public void testGetServiceReturnsNullForUnknownType() {
+        VehicleService service = controlCenter.getService("UNKNOWN");
+        assertNull(service);
+    }
+    
+    @Test
+    public void testAutomaticRepairOnVehicleParkedInMaintenance() throws NullVehiculeException, StationFullException {
+        controlCenter.registerStation(station);
+        VehiculeComponent velo = createVehicule();
+        
+        velo.setState(new fil.l3.coo.vehicule.state.EnMaintenanceState());
+        station.parkVehicule(velo);
+        
+        assertEquals("DISPONIBLE", velo.getStateName());
+        assertEquals(0, velo.getRentalCount());
+    }
+    
+    @Test
+    public void testMultipleStationsTracking() throws NullVehiculeException, StationFullException {
+        Station<VehiculeComponent> station2 = new Station<>(12);
+        
+        controlCenter.registerStation(station);
+        controlCenter.registerStation(station2);
+        
+        station.parkVehicule(createVehicule());
+        station2.parkVehicule(createVehicule());
+        station2.parkVehicule(createVehicule());
+        
+        assertEquals(2, controlCenter.getStations().size());
+        assertEquals(3, controlCenter.getTotalVehicles());
+        assertEquals(27, controlCenter.getTotalCapacity());
+    }
+    
+    @Test
+    public void testGetStationEventsForNonExistentStation() {
+        List<String> events = controlCenter.getStationEvents(999);
+        assertTrue(events.isEmpty());
     }
 }

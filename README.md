@@ -338,7 +338,7 @@ System.out.println(velo.getRentalCount()); // 0 (compteur réinitialisé)
 **Organisation :**
 
 - Tests pour chaque classe principale : `UserTest`, `StationTest`, `VehiculeTest`, `RentalSystemTest`, `ControlCenterTest`, `VehicleServiceTest`
-- Tests unitaires dédiés pour chaque état : `DisponibleStateTest`, `EnLocationStateTest`, `EnMaintenanceStateTest`, `HorsServiceStateTest`, `VoleStateTest`
+- Tests intégrés des transitions d'états : `VehiculeStateTest` (couvre tous les états de manière cohérente)
 - Utilisation de JUnit 5 avec `@BeforeEach` pour l'initialisation
 - Tests des cas nominaux et des cas d'erreur (exceptions)
 

@@ -123,15 +123,6 @@ public class Station<T extends VehiculeComponent> {
     }
 
     /**
-     * Checks if the station has vehicles available for removal.
-     * 
-     * @return true if at least one vehicle is parked, false otherwise
-     */
-    public boolean hasVehicules() {
-        return !parkedVehicules.isEmpty();
-    }
-
-    /**
      * Checks if the station is empty (no vehicles parked).
      * 
      * @return true if no vehicles are parked, false otherwise

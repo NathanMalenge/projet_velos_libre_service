@@ -34,7 +34,7 @@ public class RoundRobinRedistribution implements RedistributionStrategy {
             int diff = most.getOccupiedSpaces() - least.getOccupiedSpaces();
             if (diff <= 1) break; 
 
-            if (!most.hasVehicules() || !least.hasAvailableSpace()) break;
+            if (!most.hasAvailableVehicules() || !least.hasAvailableSpace()) break;
 
             List<VehiculeComponent> parked = most.getParkedVehicules();
             if (parked.isEmpty()) break;

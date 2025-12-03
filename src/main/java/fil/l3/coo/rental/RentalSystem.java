@@ -65,7 +65,7 @@ public class RentalSystem {
             );
         }
         try {
-            T removedVehicule = station.removeVehicule(vehicule);
+            T removedVehicule = station.removeVehicule(vehicule); //TODO changer la maniere dont on choisit le velo.
             user.deductMoney(cost);
             removedVehicule.getState().rent(getUnderlyingVehicule(removedVehicule));
             

@@ -37,7 +37,6 @@ public class User {
      * Only positive amounts are accepted; negative or zero amounts are ignored.
      * 
      * @param amount the amount of money to add (must be positive)
-     * @throws NegativeAmountException if the amount is negative or zero
      */
     public void addMoney(double amount) throws NegativeAmountException{
         if (amount > 0) {
@@ -52,8 +51,7 @@ public class User {
      * The deduction only succeeds if the amount is positive and the user has sufficient funds.
      * 
      * @param amount the amount of money to deduct (must be positive)
-     * @throws InsufficientFundsException if there are insufficient funds
-     * @throws NegativeAmountException if the amount is negative or zero
+     * @throws InsufficientFundsException if the amount is negative or zero, or if there are insufficient funds
      */
     public void deductMoney(double amount) throws InsufficientFundsException, NegativeAmountException {
         if (amount <= 0) {

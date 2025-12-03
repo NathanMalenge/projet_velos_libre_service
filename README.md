@@ -8,13 +8,6 @@ Travail du binôme:
 **Introduction :**
 Ce projet implémente un système de gestion de location de véhicules urbains. Il permet de gérer des utilisateurs avec des portefeuilles, des stations de véhicules avec capacité limitée, différents types de véhicules auxquels on peut ajouter des accessoires via le pattern Decorator, et un système complet de location coordonnant l'ensemble. Le projet illustre l'application de principes de conception orientée objet avancés.
 
-
-### Ce qu'il nous manque
-
-- simulation temporelle
-- Redistrib
-- voleur
-
 ---
 
 ## HowTo
@@ -345,6 +338,7 @@ System.out.println(velo.getRentalCount()); // 0 (compteur réinitialisé)
 **Organisation :**
 
 - Tests pour chaque classe principale : `UserTest`, `StationTest`, `VehiculeTest`, `RentalSystemTest`, `ControlCenterTest`, `VehicleServiceTest`
+- Tests unitaires dédiés pour chaque état : `DisponibleStateTest`, `EnLocationStateTest`, `EnMaintenanceStateTest`, `HorsServiceStateTest`, `VoleStateTest`
 - Utilisation de JUnit 5 avec `@BeforeEach` pour l'initialisation
 - Tests des cas nominaux et des cas d'erreur (exceptions)
 

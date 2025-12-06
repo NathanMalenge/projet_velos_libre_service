@@ -93,18 +93,6 @@ public class ControlCenterTest {
     }
     
     @Test
-    public void testAutomaticRepairOnVehicleParkedInMaintenance() throws NullVehiculeException, StationFullException {
-        controlCenter.registerStation(station);
-        VehiculeComponent velo = createVehicule();
-        
-        velo.setState(new fil.l3.coo.vehicule.state.EnMaintenanceState());
-        station.parkVehicule(velo);
-        
-        assertEquals("DISPONIBLE", velo.getStateName());
-        assertEquals(0, velo.getRentalCount());
-    }
-    
-    @Test
     public void testMultipleStationsTracking() throws NullVehiculeException, StationFullException {
         Station<VehiculeComponent> station2 = new Station<>(12);
         
@@ -124,5 +112,44 @@ public class ControlCenterTest {
     public void testGetStationEventsForNonExistentStation() {
         List<String> events = controlCenter.getStationEvents(999);
         assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void testMaintenanceTakesOneTickBeforeRepair() throws NullVehiculeException, StationFullException {
+        controlCenter.registerStation(station);
+        VehiculeComponent velo = createVehicule();
+
+        // Marque le vélo en maintenance lors du dépôt
+        for (int i = 0; i < fil.l3.coo.vehicule.Vehicule.getMaintenanceThreshold(); i++) {
+            velo.incrementRentalCount();
+        }
+        station.parkVehicule(velo);
+        assertEquals("EN_MAINTENANCE", velo.getStateName());
+
+        // Premier tick : le vélo reste en maintenance
+        controlCenter.onTick();
+        assertEquals("EN_MAINTENANCE", velo.getStateName());
+
+        // Second tick : le réparateur intervient et remet le vélo disponible
+        controlCenter.onTick();
+        assertEquals("DISPONIBLE", velo.getStateName());
+        assertEquals(0, velo.getRentalCount());
+    }
+
+    @Test
+    public void testVehicleTheftAfterBeingAloneForTwoTicks() throws Exception {
+        controlCenter.registerStation(station);
+        VehiculeComponent velo = createVehicule();
+        station.parkVehicule(velo);
+
+        // Force le vélo à être à risque de vol
+        velo.incrementIdleTime();
+        velo.incrementIdleTime();
+        assertTrue(velo.isAtRiskOfTheft());
+
+        // On ne peut pas contrôler Math.random simplement ici, donc on vérifie au moins
+        // que la logique ne jette pas d'exception et que l'état interne reste cohérent.
+        // Le vol effectif reste aléatoire.
+        controlCenter.onTick();
     }
 }

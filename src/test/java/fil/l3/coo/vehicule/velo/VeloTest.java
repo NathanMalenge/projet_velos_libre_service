@@ -1,7 +1,5 @@
 package fil.l3.coo.vehicule.velo;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import fil.l3.coo.vehicule.Vehicule;
 import fil.l3.coo.vehicule.VehiculeTest;
 

@@ -14,6 +14,7 @@ public abstract class Vehicule {
     private VehiculeState state;
     private int rentalCount;
     private int idleTimeIntervals;
+    private boolean inMaintenanceSinceOneTick;
     private static final int MAX_RENTALS_BEFORE_MAINTENANCE = 10;
     private static final int MAX_IDLE_TIME_BEFORE_THEFT = 2;
     
@@ -26,6 +27,7 @@ public abstract class Vehicule {
         this.state = new DisponibleState();
         this.rentalCount = 0;
         this.idleTimeIntervals = 0;
+        this.inMaintenanceSinceOneTick = false;
     }
     
     /**
@@ -127,6 +129,18 @@ public abstract class Vehicule {
      */
     public boolean needsMaintenance() {
         return rentalCount >= MAX_RENTALS_BEFORE_MAINTENANCE;
+    }
+
+    public boolean isInMaintenanceSinceOneTick(){
+        return this.inMaintenanceSinceOneTick;
+    }
+
+    public void resetMaintenanceTick(){
+        this.inMaintenanceSinceOneTick = false;
+    }
+
+    public void addTickToMaintenance(){
+        this.inMaintenanceSinceOneTick = true;
     }
     
     

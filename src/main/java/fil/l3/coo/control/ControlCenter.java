@@ -8,6 +8,7 @@ import java.util.Map;
 import fil.l3.coo.station.Station;
 import fil.l3.coo.station.StationObserver;
 import fil.l3.coo.vehicule.VehiculeComponent;
+import fil.l3.coo.vehicule.state.EnMaintenanceState;
 
 /**
  * Supervision component that observes all registered stations and keeps a
@@ -149,16 +150,10 @@ public class ControlCenter implements StationObserver {
         }
         
         stationEvents.get(stationId).add(event);
-        if (vehicule.needsMaintenance() || "EN_MAINTENANCE".equals(vehicule.getStateName())) {
-            VehicleService repairService = getService("REPAIR");
-            if (repairService != null) {
-                boolean serviced = repairService.service(station, vehicule);
-                
-                if (serviced) {
-                    String maintenanceEvent = String.format("Vehicle repaired: %s", vehicule.getDescription());
-                    stationEvents.get(stationId).add(maintenanceEvent);
-                }
-            }
+        if (vehicule.needsMaintenance()) {
+            vehicule.setState(new EnMaintenanceState());
+            String maintenanceEvent = String.format("Vehicle needs maintenance: %s", vehicule.getDescription());
+            stationEvents.get(stationId).add(maintenanceEvent);
         }
     }
 
@@ -186,33 +181,82 @@ public class ControlCenter implements StationObserver {
             int id = s.getId();
             int empty = emptyStreaks.getOrDefault(id, 0);
             int full = fullStreaks.getOrDefault(id, 0);
-
-            if (s.isEmpty()) {
-                empty++;
-            } else {
-                empty = 0;
-            }
-
-            if (s.isFull()) {
-                full++;
-            } else {
-                full = 0;
-            }
-
-            emptyStreaks.put(id, empty);
-            fullStreaks.put(id, full);
-
-            if (empty >= 2 || full >= 2) {
-                needRedistribution = true;
-            }
+            List<VehiculeComponent> vehicules = s.getParkedVehicules();
+            handleMaintenanceForStation(s, vehicules);
+            handleTheftForStation(s, vehicules, id);
+            needRedistribution = updateStreaksAndCheckRedistribution(s, id, empty, full) || needRedistribution;
         }
 
         if (needRedistribution && redistributionStrategy != null) {
-            redistributionStrategy.redistribute(stations);
-            for (Station<VehiculeComponent> s : stations) {
-                emptyStreaks.put(s.getId(), 0);
-                fullStreaks.put(s.getId(), 0);
+            redistributeAndResetStreaks();
+        }
+    }
+
+    private void handleMaintenanceForStation(Station<VehiculeComponent> station, List<VehiculeComponent> vehicules) {
+        for (VehiculeComponent v : vehicules) {
+            if ("EN_MAINTENANCE".equals(v.getStateName())) {
+                if (v.isInMaintenanceSinceOneTick()) {
+                    VehicleService repairService = getService("REPAIR");
+                    if (repairService != null) {
+                        boolean serviced = repairService.service(station, v);
+
+                        if (serviced) {
+                            String maintenanceEvent = String.format("Vehicle repaired: %s", v.getDescription());
+                            stationEvents.get(station.getId()).add(maintenanceEvent);
+                        }
+                    }
+                    v.resetMaintenanceTick();
+                } else {
+                    v.addTickToMaintenance();
+                }
             }
+        }
+    }
+
+    private void handleTheftForStation(Station<VehiculeComponent> station, List<VehiculeComponent> vehicules, int stationId) {
+        if (vehicules.size() == 1) {
+            VehiculeComponent v = vehicules.get(0);
+            if (v.isAvailable()) {
+                v.incrementIdleTime();
+
+                if (v.isAtRiskOfTheft() && Math.random() < 0.5) {
+                    try {
+                        station.removeVehicule(v);
+                        stationEvents.get(stationId).add(String.format("Vehicle stolen: %s", v.getDescription()));
+                    } catch (Exception e) {}
+                }
+            }
+        } else {
+            for (VehiculeComponent v : vehicules) {
+                v.resetIdleTime();
+            }
+        }
+    }
+
+    private boolean updateStreaksAndCheckRedistribution(Station<VehiculeComponent> station, int stationId, int empty, int full) {
+        if (station.isEmpty()) {
+            empty++;
+        } else {
+            empty = 0;
+        }
+
+        if (station.isFull()) {
+            full++;
+        } else {
+            full = 0;
+        }
+
+        emptyStreaks.put(stationId, empty);
+        fullStreaks.put(stationId, full);
+
+        return empty >= 2 || full >= 2;
+    }
+
+    private void redistributeAndResetStreaks() {
+        redistributionStrategy.redistribute(stations);
+        for (Station<VehiculeComponent> s : stations) {
+            emptyStreaks.put(s.getId(), 0);
+            fullStreaks.put(s.getId(), 0);
         }
     }
 

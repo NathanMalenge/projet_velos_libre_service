@@ -88,6 +88,13 @@ public interface VehiculeComponent {
      * @return true if maintenance is needed, false otherwise
      */
     boolean needsMaintenance();
+
+    boolean isInMaintenanceSinceOneTick();
+
+    void resetMaintenanceTick();
+
+    void addTickToMaintenance();
+    
     
     /**
      * Gets the number of time intervals this vehicle has been idle.

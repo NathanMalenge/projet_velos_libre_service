@@ -233,8 +233,9 @@ public class ControlCenter implements StationObserver {
      * Updates idle time and possibly removes stolen vehicles for a station.
      * <p>
      * A vehicle can be stolen only if it is the single available vehicle in
-     * the station and has remained idle long enough. Theft is applied with a
-     * fixed probability.
+     * the station and has remained idle long enough. Once the condition is
+     * met, the theft is deterministic (no additional randomness), which
+     * matches the project specification and simplifies testing.
      *
      * @param station    the station being processed
      * @param vehicules  currently parked vehicles in this station
@@ -246,7 +247,7 @@ public class ControlCenter implements StationObserver {
             if (v.isAvailable()) {
                 v.incrementIdleTime();
 
-                if (v.isAtRiskOfTheft() && Math.random() < 0.5) {
+                if (v.isAtRiskOfTheft()) {
                     try {
                         station.removeVehicule(v);
                         stationEvents.get(stationId).add(String.format("Vehicle stolen: %s", v.getDescription()));

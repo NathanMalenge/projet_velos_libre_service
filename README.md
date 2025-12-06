@@ -191,9 +191,9 @@ try {
 }
 ```
 
-### 7. Centre de Contrôle et Pattern Observer
+### 7. Centre de Contrôle, Observer et simulation
 
-**Principe :** Le Centre de Contrôle supervise l'ensemble de la flotte de véhicules et des stations. Il utilise le **Pattern Observer** pour être notifié automatiquement à chaque dépôt ou retrait de véhicule.
+**Principe :** Le Centre de Contrôle supervise l'ensemble de la flotte de véhicules et des stations. Il utilise le **Pattern Observer** pour être notifié automatiquement à chaque dépôt ou retrait de véhicule, puis applique des règles globales à chaque tick de la simulation.
 
 **Mise en œuvre :**
 
@@ -208,6 +208,7 @@ try {
 - Historique des événements par station
 - Statistiques de la flotte (total véhicules, capacité totale)
 - Affichage du résumé de la flotte
+- Application des règles métier à chaque tick de simulation via `onTick()` : maintenance différée, détection des vols et redistribution des vélos
 
 **Avantages :**
 
@@ -216,7 +217,20 @@ try {
 - Conforme aux exigences du sujet (notification à chaque opération)
 - Prépare le terrain pour la redistribution automatique des véhicules
 
-**Exemple d'utilisation :**
+**Simulation (tours de temps) :**
+
+La classe `Simulation` orchestre des tours de temps (ticks) :
+
+- création d'un ensemble de stations avec des identifiants uniques ;
+- population initiale de la flotte (vélos répartis dans les stations) ;
+- à chaque tick :
+    - dépôts/retraits aléatoires de vélos via le `RentalSystem` ;
+    - appel à `controlCenter.onTick()` pour appliquer :
+        - la maintenance différée (réparation après un tick complet en état `EN_MAINTENANCE`),
+        - la détection des vols (vélo seul et disponible depuis 2 intervalles → vol définitif),
+        - la redistribution des vélos lorsque des stations restent pleines/vides trop longtemps.
+
+**Exemple d'utilisation simple :**
 
 ```java
 ControlCenter controlCenter = new ControlCenter();
@@ -296,14 +310,15 @@ for (int i = 0; i < 10; i++) {
 System.out.println(velo.getStateName()); // "HORS_SERVICE"
 ```
 
-### 10. Services de maintenance (type Visitor léger)
+### 10. Services de maintenance et d'extension de la flotte
 
-**Principe :** Le Pattern Visitor permet d'ajouter de nouvelles opérations sur les véhicules sans modifier leurs classes. Il sépare les algorithmes de maintenance des structures de véhicules sur lesquelles ils opèrent.
+**Principe :** Les services de maintenance sont modélisés par une interface `VehicleService`. Le `ControlCenter` peut enregistrer plusieurs services (réparation, peinture, nettoyage, etc.) et les appliquer aux véhicules sans modifier leurs classes. Ce n'est pas un Visitor strict, mais un mécanisme de services externes.
 
 **Mise en œuvre :**
 
-- `VehicleService` : Interface définissant le contrat pour tous les services de maintenance (service, getServiceType)
-- `Repairer` : Implémentation concrète effectuant les réparations sur les véhicules
+- `VehicleService` : Interface définissant le contrat pour tous les services (méthode `service`, `getServiceType`)
+- `Repairer` : Implémentation concrète effectuant les réparations sur les véhicules en état `EN_MAINTENANCE`
+- `Painter` (exemple d'extension) : Service supplémentaire qui pourrait, par exemple, marquer un véhicule comme "peint" pour un événement particulier (JO, campagne marketing...) ;
 - `ControlCenter` : Gère une liste de services disponibles pour la flotte et les applique pendant les ticks de simulation
 
 **Fonctionnalités :**
@@ -312,7 +327,7 @@ System.out.println(velo.getStateName()); // "HORS_SERVICE"
 - **Réparation des véhicules** : Le `Repairer` remet le véhicule en état disponible et réinitialise le compteur de locations
 - **Gestion des décorateurs** : Unwrap automatique des décorateurs pour accéder au véhicule de base
 - **Intégration avec le State pattern** : Vérifie l'état du véhicule avant la réparation
-- **Extensibilité** : Nouveaux services (nettoyage, inspection) peuvent être ajoutés facilement
+- **Extensibilité** : Nouveaux services (nettoyage, inspection, peinture, etc.) peuvent être ajoutés facilement sans modifier les classes de véhicules
 
 **Avantages :**
 
@@ -321,15 +336,21 @@ System.out.println(velo.getStateName()); // "HORS_SERVICE"
 - Respect du principe Open/Closed
 - Compatible avec les patterns Decorator et State
 
-**Exemple d'utilisation :**
+**Exemple d'utilisation (réparation) :**
 
 ```java
 Vehicule velo = new VeloClassique();
 velo.getState().sendToMaintenance(velo);
 System.out.println(velo.getStateName()); // "EN_MAINTENANCE"
 
-Repairer repairer = new Repairer();
-repairer.service(velo);
+ControlCenter center = new ControlCenter();
+Station<VehiculeComponent> station = new Station<>(10);
+center.registerStation(station);
+station.parkVehicule(velo);
+
+// Lors du tick suivant, le ControlCenter appellera automatiquement le Repairer
+center.onTick();
+center.onTick(); // après un tick complet en maintenance, le vélo est réparé
 System.out.println(velo.getStateName()); // "DISPONIBLE"
 System.out.println(velo.getRentalCount()); // 0 (compteur réinitialisé)
 ```
@@ -352,7 +373,7 @@ System.out.println(velo.getRentalCount()); // 0 (compteur réinitialisé)
 - Tests du Pattern Observer (notifications du ControlCenter)
 - Tests de l'unicité des IDs de stations
 - Tests du Pattern State (transitions d'état, maintenance automatique, vol)
-- Tests du Pattern Visitor (réparation des véhicules, gestion des états)
+- Tests des services de maintenance (réparation des véhicules, gestion des états)
 - Tests des véhicules spécifiques (VeloClassique, VeloElectrique avec prix et types)
 - Tests de la classe Location (getters, coût, toString)
 

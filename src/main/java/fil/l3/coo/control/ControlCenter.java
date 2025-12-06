@@ -11,10 +11,11 @@ import fil.l3.coo.vehicule.VehiculeComponent;
 import fil.l3.coo.vehicule.state.EnMaintenanceState;
 
 /**
- * Supervision component that observes all registered stations and keeps a
- * global view on the fleet. It receives notifications for every vehicle
- * deposit/removal and exposes helper methods for statistics and auditing. This
- * class will be extended later with redistribution/maintenance logic.
+ * Central supervision component for the simulation.
+ * <p>
+ * The control center observes all registered stations, records events,
+ * schedules maintenance, detects theft situations and triggers vehicle
+ * redistribution when stations stay empty or full for too long.
  */
 public class ControlCenter implements StationObserver {
 
@@ -36,9 +37,9 @@ public class ControlCenter implements StationObserver {
     }
     
     /**
-     * Enregistre un nouveau service métier (réparateur, peintre, etc.).
-     * 
-     * @param service le service à enregistrer
+        * Registers a new vehicle service (repair, painting, etc.).
+        *
+        * @param service the service to register
      */
     public void registerService(VehicleService service) {
         if (service != null && !services.contains(service)) {
@@ -47,19 +48,19 @@ public class ControlCenter implements StationObserver {
     }
     
     /**
-     * Récupère tous les services enregistrés.
-     * 
-     * @return la liste des services
+        * Returns all registered services.
+        *
+        * @return a defensive copy of the services list
      */
     public List<VehicleService> getServices() {
         return new ArrayList<>(services);
     }
     
     /**
-     * Récupère un service par son type.
-     * 
-     * @param serviceType le type de service (ex: "REPAIR", "PAINT")
-     * @return le service, ou null si non trouvé
+        * Returns a service by its logical type.
+        *
+        * @param serviceType the type of service (for example "REPAIR" or "PAINT")
+        * @return the service instance, or {@code null} if none matches
      */
     public VehicleService getService(String serviceType) {
         return services.stream()
@@ -69,8 +70,10 @@ public class ControlCenter implements StationObserver {
     }
 
     /**
-     * Registers a station to be supervised. The control center subscribes to
-     * station events and starts tracking its metrics.
+        * Registers a station to be supervised.
+        * <p>
+        * The control center subscribes to station events and starts tracking its
+        * metrics (capacity, events, empty/full streaks).
      * 
      * @param station the station to register
      */
@@ -85,8 +88,10 @@ public class ControlCenter implements StationObserver {
     }
 
     /**
-     * Unregisters a station. Observers are detached and events history is
-     * dropped.
+        * Unregisters a station.
+        * <p>
+        * The control center stops observing the station and discards its history
+        * and streak counters.
      * 
      * @param station the station to unregister
      */
@@ -100,7 +105,9 @@ public class ControlCenter implements StationObserver {
     }
 
     /**
-     * @return a defensive copy of the registered stations list
+        * Returns all supervised stations.
+        *
+        * @return a defensive copy of the registered stations list
      */
     public List<Station<VehiculeComponent>> getStations() {
         return new ArrayList<>(stations);
@@ -129,7 +136,7 @@ public class ControlCenter implements StationObserver {
     }
 
     /**
-     * Returns the recorded events for a station, ordered chronologically.
+        * Returns the recorded events for a station, ordered chronologically.
      * 
      * @param stationId the ID of the station
      * @return the list of events for the station
@@ -192,6 +199,15 @@ public class ControlCenter implements StationObserver {
         }
     }
 
+    /**
+     * Updates maintenance status for all vehicles parked in a station.
+     * <p>
+     * Vehicles that have just entered maintenance stay unavailable for one
+     * tick before the registered repair service is invoked.
+     *
+     * @param station   the station being processed
+     * @param vehicules currently parked vehicles in this station
+     */
     private void handleMaintenanceForStation(Station<VehiculeComponent> station, List<VehiculeComponent> vehicules) {
         for (VehiculeComponent v : vehicules) {
             if ("EN_MAINTENANCE".equals(v.getStateName())) {
@@ -213,6 +229,17 @@ public class ControlCenter implements StationObserver {
         }
     }
 
+    /**
+     * Updates idle time and possibly removes stolen vehicles for a station.
+     * <p>
+     * A vehicle can be stolen only if it is the single available vehicle in
+     * the station and has remained idle long enough. Theft is applied with a
+     * fixed probability.
+     *
+     * @param station    the station being processed
+     * @param vehicules  currently parked vehicles in this station
+     * @param stationId  identifier of the station
+     */
     private void handleTheftForStation(Station<VehiculeComponent> station, List<VehiculeComponent> vehicules, int stationId) {
         if (vehicules.size() == 1) {
             VehiculeComponent v = vehicules.get(0);
@@ -233,6 +260,16 @@ public class ControlCenter implements StationObserver {
         }
     }
 
+    /**
+     * Updates empty/full streak counters for one station and decides if a
+     * redistribution should be scheduled.
+     *
+     * @param station   the station being processed
+     * @param stationId identifier of the station
+     * @param empty     current empty-streak value
+     * @param full      current full-streak value
+     * @return {@code true} if redistribution should be triggered based on this station
+     */
     private boolean updateStreaksAndCheckRedistribution(Station<VehiculeComponent> station, int stationId, int empty, int full) {
         if (station.isEmpty()) {
             empty++;
@@ -252,6 +289,10 @@ public class ControlCenter implements StationObserver {
         return empty >= 2 || full >= 2;
     }
 
+    /**
+     * Applies the current redistribution strategy and resets all streak
+     * counters.
+     */
     private void redistributeAndResetStreaks() {
         redistributionStrategy.redistribute(stations);
         for (Station<VehiculeComponent> s : stations) {

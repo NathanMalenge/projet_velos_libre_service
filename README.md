@@ -261,9 +261,9 @@ controlCenter.printFleetSummary(); // Affiche les statistiques de la flotte
 **Fonctionnalités :**
 
 - **Suivi automatique des locations** : Compteur incrémenté à chaque location
-- **Maintenance automatique** : Après 10 locations, retour automatique vers maintenance
+- **Maintenance planifiée** : Après 10 locations, le véhicule est envoyé en maintenance puis effectivement réparé après un tick de simulation (voir ControlCenter)
 - **Suivi du temps d'inactivité** : Compteur d'intervalles sans location
-- **Risque de vol** : Après 2 intervalles d'inactivité, véhicule marquable comme volé
+- **Risque de vol** : Après 2 intervalles d'inactivité où le véhicule reste seul et disponible dans une station, il devient éligible au vol
 - **Transitions d'état validées** : Chaque état définit ses transitions autorisées
 
 **Avantages :**
@@ -296,7 +296,7 @@ for (int i = 0; i < 10; i++) {
 System.out.println(velo.getStateName()); // "HORS_SERVICE"
 ```
 
-### 10. Pattern Visitor pour la maintenance des véhicules
+### 10. Services de maintenance (type Visitor léger)
 
 **Principe :** Le Pattern Visitor permet d'ajouter de nouvelles opérations sur les véhicules sans modifier leurs classes. Il sépare les algorithmes de maintenance des structures de véhicules sur lesquelles ils opèrent.
 
@@ -304,11 +304,12 @@ System.out.println(velo.getStateName()); // "HORS_SERVICE"
 
 - `VehicleService` : Interface définissant le contrat pour tous les services de maintenance (service, getServiceType)
 - `Repairer` : Implémentation concrète effectuant les réparations sur les véhicules
-- `ControlCenter` : Gère une liste de services disponibles pour la flotte
+- `ControlCenter` : Gère une liste de services disponibles pour la flotte et les applique pendant les ticks de simulation
 
 **Fonctionnalités :**
 
-- **Réparation des véhicules** : Le `Repairer` peut réparer un véhicule en état `EN_MAINTENANCE`
+- **Maintenance différée** : un véhicule en état `EN_MAINTENANCE` reste en maintenance pendant un tick complet avant d'être réparé par le `Repairer` via le `ControlCenter`
+- **Réparation des véhicules** : Le `Repairer` remet le véhicule en état disponible et réinitialise le compteur de locations
 - **Gestion des décorateurs** : Unwrap automatique des décorateurs pour accéder au véhicule de base
 - **Intégration avec le State pattern** : Vérifie l'état du véhicule avant la réparation
 - **Extensibilité** : Nouveaux services (nettoyage, inspection) peuvent être ajoutés facilement

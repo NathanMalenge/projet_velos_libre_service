@@ -38,4 +38,19 @@ public class BasketDecorator extends VehiculeDecorator {
     public String getDescription() {
         return vehicule.getDescription() + " + Basket";
     }
+
+    @Override
+    public void addTickToMaintenance() {
+        vehicule.addTickToMaintenance();
+    }
+
+    @Override
+    public void resetMaintenanceTick() {
+        vehicule.resetMaintenanceTick();
+    }
+
+    @Override
+    public boolean isInMaintenanceSinceOneTick() {
+        return vehicule.isInMaintenanceSinceOneTick();
+    }
 }

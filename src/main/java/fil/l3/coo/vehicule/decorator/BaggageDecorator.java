@@ -38,4 +38,20 @@ public class BaggageDecorator extends VehiculeDecorator {
     public String getDescription() {
         return vehicule.getDescription() + " + Baggage";
     }
+
+    @Override
+    public void addTickToMaintenance() {
+        vehicule.addTickToMaintenance();
+    }
+
+    @Override
+    public void resetMaintenanceTick() {
+        vehicule.resetMaintenanceTick();
+    }
+
+    @Override
+    public boolean isInMaintenanceSinceOneTick() {
+        return vehicule.isInMaintenanceSinceOneTick();
+    }
+
 }

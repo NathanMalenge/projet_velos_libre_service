@@ -386,7 +386,8 @@ fil.l3.coo
 ├── control/
 │   ├── ControlCenter
 │   ├── VehicleService (interface)
-│   └── Repairer
+│   ├── Repairer
+│   └── Painter (exemple de service supplémentaire)
 ├── user/
 │   ├── User
 │   └── exceptions/
@@ -410,6 +411,8 @@ fil.l3.coo
 │       ├── Velo (abstract)
 │       ├── VeloClassique
 │       └── VeloElectrique
+│   └── trottinette/
+│       └── TrottinetteElectrique (exemple d'extension de la flotte)
 ├── station/
 │   ├── Station<T>
 │   ├── StationObserver (interface)

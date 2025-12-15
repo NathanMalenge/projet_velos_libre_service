@@ -6,8 +6,7 @@ package fil.l3.coo;
 public class Main {
 
     public static void main(String[] args) {
-        // Paramètres par défaut : 4 stations, 5 vélos/station, 5 ticks, graine fixe
-        Simulation sim = new Simulation(4, 5, 5, 42L);
+        Simulation sim = new Simulation(4, 5, 100, 42L, 10);
         sim.run();
     }
 }

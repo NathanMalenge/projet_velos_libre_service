@@ -304,6 +304,8 @@ public class ControlCenter implements StationObserver {
 
     /**
      * Sets the redistribution strategy.
+     * 
+     * @param strategy the redistribution strategy to use
      */
     public void setRedistributionStrategy(RedistributionStrategy strategy) {
         if (strategy != null) this.redistributionStrategy = strategy;

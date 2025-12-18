@@ -90,7 +90,11 @@ public class Simulation {
         }      
     }
 
-    /** Executes a single tick: random moves, supervision, summary. */
+    /**
+     * Executes a single tick: random moves, supervision, summary.
+     * 
+     * @param tickIndex the index of the current tick
+     */
     public void runTick(int tickIndex) {
         creditUsers();
         int movesThisTick = 1 + rnd.nextInt(Math.max(1, stationCount));
@@ -115,7 +119,11 @@ public class Simulation {
         }
     }
 
-    /** Performs random rentals using users and the RentalSystem. */
+    /**
+     * Performs random rentals using users and the RentalSystem.
+     * 
+     * @param count the number of rental attempts to perform
+     */
     private void performRandomRentals(int count) {
         for (int m = 0; m < count; m++) {
             if (users.isEmpty()) return;
@@ -174,6 +182,10 @@ public class Simulation {
      * Picks the i-th available vehicle in the given station. If the index
      * is out of bounds, the first available vehicle is returned instead.
      * Returns {@code null} if there is no available vehicle.
+     * 
+     * @param source the station from which to pick a vehicle
+     * @param index the index of the desired available vehicle
+     * @return the selected available vehicle, or {@code null} if none available
      */
     private VehiculeComponent pickIthAvailableVehicle(Station<VehiculeComponent> source, int index) {
         List<VehiculeComponent> parked = source.getParkedVehicules();
@@ -206,7 +218,11 @@ public class Simulation {
         controlCenter.onTick();
     }
 
-    /** Prints a short summary for the current tick. */
+    /**
+     * Prints a short summary for the current tick.
+     * 
+     * @param tickIndex the index of the current tick
+     */
     public void printSummary(int tickIndex) {
         System.out.printf("\n[Tick %d]\n", tickIndex);
         controlCenter.printFleetSummary();
